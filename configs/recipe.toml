@@ -1,0 +1,21 @@
+# Training recipe shared by all four arms (spec §5.3).
+# Lines marked PILOT are chosen by the G3 pilot; then set `frozen = true` and commit.
+# `snz train` refuses non-pilot runs while frozen = false.
+frozen = false
+
+batch_size = 8                 # PILOT
+lr = 0.01                      # PILOT  SGD learning rate at batch_size
+momentum = 0.9
+weight_decay = 1e-4
+iterations = 27000             # PILOT  identical for every arm
+warmup_iters = 1000
+lr_steps = [0.67, 0.89]        # PILOT  fractions of `iterations`; LR x0.1 at each
+min_sizes = [576, 608, 640, 672, 704, 720]  # PILOT scale jitter (short side); last = eval size
+max_size = 1280
+hflip_p = 0.5
+p_original = 0.5               # half-stylized arms: P(original image)
+trainable_layers = 3
+bf16 = true
+num_workers = 8
+log_every = 20
+checkpoint_every = 500

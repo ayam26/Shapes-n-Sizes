@@ -1,0 +1,16 @@
+# The 2x2 design (spec §3).
+[BASE]
+backbone = "in1k_v1"
+stylized = false
+
+[STY]
+backbone = "in1k_v1"
+stylized = true
+
+[SIN]
+backbone = "sin"
+stylized = false
+
+[BOTH]
+backbone = "sin"
+stylized = true

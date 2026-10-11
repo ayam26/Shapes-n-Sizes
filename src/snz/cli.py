@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import tomllib
 from pathlib import Path
@@ -33,6 +34,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_stylize)
 
+    p = commands.add_parser("train", help="train one arm/seed (pilot at G3, full runs at G5)")
+    p.add_argument("--arm", choices=["BASE", "STY", "SIN", "BOTH"], required=True)
+    p.add_argument("--seed", type=int, required=True)
+    p.add_argument("--labels", type=Path, required=True, help="det_train.json")
+    p.add_argument("--manifest", type=Path, default=Path("manifests/train.csv"))
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--stylized", type=Path, help="stylized/train (STY, BOTH)")
+    p.add_argument("--sin-weights", type=Path, help="resnet50_train_60_epochs-c8e5653e.pth.tar")
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
+    p.add_argument("--arms", type=Path, default=Path("configs/arms.toml"))
+    p.add_argument("--stylize-config", type=Path, default=Path("configs/stylize.toml"))
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--pilot", action="store_true", help="G3 pilot: BASE only, overrides allowed")
+    p.add_argument("--iterations", type=int)
+    p.add_argument("--lr", type=float)
+    p.add_argument("--batch-size", type=int)
+    p.set_defaults(func=_cmd_train)
+
     return parser
 
 
@@ -58,6 +78,41 @@ def _cmd_stylize(args) -> int:
     rows = run_stylize(args.set, args.manifests, args.images, args.styles_root, args.out, cfg,
                        stylizer)
     print(f"{len(rows)} stylized images in {args.out}")
+    return 0
+
+
+def _cmd_train(args) -> int:
+    from snz.data.bdd import load_frames, select_frames
+    from snz.data.manifest import read_manifest
+    from snz.stylize.build import load_stylize_config
+    from snz.train.config import load_arms, load_recipe
+    from snz.train.model import load_backbone_state
+    from snz.train.train import train_run
+
+    recipe = load_recipe(args.recipe)
+    overrides = {k: v for k, v in (("iterations", args.iterations), ("lr", args.lr),
+                                   ("batch_size", args.batch_size)) if v is not None}
+    if args.pilot:
+        if args.arm != "BASE":
+            raise SystemExit("error: the pilot trains the BASE arm only (spec §5.4)")
+        recipe = dataclasses.replace(recipe, **overrides)
+    elif overrides:
+        raise SystemExit("error: --iterations/--lr/--batch-size are pilot-only; edit the recipe")
+    elif not recipe.frozen:
+        raise SystemExit("error: configs/recipe.toml is not frozen (gate G3); use --pilot")
+    arm = load_arms(args.arms)[args.arm]
+    if arm.stylized and args.stylized is None:
+        raise SystemExit(f"error: arm {arm.name} needs --stylized")
+    frames, _ = load_frames(args.labels)
+    frames = select_frames(frames, [n for n, _ in read_manifest(args.manifest)])
+    summary = train_run(
+        arm=arm, seed=args.seed, recipe=recipe, frames=frames, image_dir=args.images,
+        stylized_dir=args.stylized,
+        n_copies=load_stylize_config(args.stylize_config).train_copies,
+        backbone_state=load_backbone_state(arm.backbone, args.sin_weights),
+        out_dir=args.out, device=args.device, pilot=args.pilot,
+    )
+    print(json.dumps(summary, indent=2))
     return 0
 
 
