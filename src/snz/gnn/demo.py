@@ -63,7 +63,9 @@ def detection_status(frame: Frame, record: dict, classes: Sequence[str] = EVAL_C
     status = np.full(n, -1, np.int64)
     if not n:
         return status
-    m = match_split([frame], [record], classes=classes, max_dets=max_dets)
+    # match under the frame's name: a recolored copy (other file name) shows the same scene
+    m = match_split([frame], [{**record, "name": frame.name}], classes=classes,
+                    max_dets=max_dets)
     # match_split appends rows class by class (in `classes` order), each by descending score
     order = []
     for c in classes:

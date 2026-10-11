@@ -203,3 +203,15 @@ def test_live_cli_writes_outputs(tmp_path, monkeypatch):
     assert "timings_ms" in result["original"] and "recolor" in result
     assert (out / "live.png").exists() and (out / "live_recolored.png").exists()
     assert (out / "live_graphs.png").exists()
+
+
+def test_detection_status_for_a_renamed_copy_of_the_frame():
+    # the live demo's recolored copy is saved under another file name but shows the same scene
+    from snz.data.bdd import Box, Frame
+    from snz.eval.matching import FD_INVENTED, FD_TP
+    from snz.gnn.demo import detection_status
+
+    frame = Frame("night.jpg", "clear", "night", (Box("car", 0, 0, 10, 10),))
+    rec = {"name": "recolored_invert.png", "boxes": [[0, 0, 10, 10], [300, 300, 310, 310]],
+           "labels": ["car", "car"], "scores": [0.9, 0.8]}
+    assert detection_status(frame, rec).tolist() == [FD_TP, FD_INVENTED]
