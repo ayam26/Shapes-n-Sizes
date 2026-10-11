@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "frozen": true,
+  "frozen_at": "2026-10-11T05:46:21Z",
+  "note": "Baseline text is the design-doc instruction plus one neutral sentence identifying the visual marker (required so the model knows which object is the target). The structure variant appends exactly one fixed sentence. Both receive the byte-identical RGB image.",
+  "methods": {
+    "rgb_baseline": {
+      "description": "RGB image + baseline instruction",
+      "input": "rgb",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations."
+    },
+    "rgb_structure_prompt": {
+      "description": "Same RGB image + baseline instruction + one structure-focused sentence (prompt intervention, not a new model)",
+      "input": "rgb",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. Before answering, consider the target's visible thickness, its perspective relative to the road and surroundings, what physically supports it, and its occlusion relationships with nearby objects."
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "label": {
+        "type": "string",
+        "enum": [
+          "physical_vehicle",
+          "flat_depiction",
+          "other",
+          "uncertain"
+        ]
+      },
+      "visible_evidence": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "label",
+      "visible_evidence"
+    ]
+  },
+  "revision": 2,
+  "revision_history": [
+    {
+      "revision": 1,
+      "run_key": "dev-v1",
+      "finding": "All 6 plain-board controls labelled flat_depiction by both methods; label names were undefined, so the model read flat_depiction as 'any flat object'."
+    },
+    {
+      "revision": 2,
+      "change": "Added one parenthetical definition per label to BOTH methods (identical text). Structure sentence unchanged. Last revision before freeze."
+    }
+  ]
+}

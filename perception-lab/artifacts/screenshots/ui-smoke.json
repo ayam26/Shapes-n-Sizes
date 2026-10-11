@@ -1,0 +1,16 @@
+{
+  "app": "http://127.0.0.1:8765",
+  "at": "2026-10-11T06:29:45.822Z",
+  "phases_seen": [
+    "capturing",
+    "uploading",
+    "queued",
+    "running",
+    "completed"
+  ],
+  "elapsed_ms": 7117,
+  "evidence_has_both_methods": true,
+  "identical_input_banner": true,
+  "gallery_non_correct_cards": 12,
+  "page_errors": []
+}

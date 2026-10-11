@@ -1,0 +1,20 @@
+{
+  "provider": "ollama",
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "runtime_version": "ollama 0.23.2",
+  "model_id": "qwen3.6:35b",
+  "model_digest": "07d35212591fc27746f0a317c975a6d68754fb38e9053d82e25f06057af28522",
+  "architecture": "qwen35moe",
+  "parameter_size": "36.0B",
+  "quantization": "Q4_K_M",
+  "think": false,
+  "options": {
+    "temperature": 0,
+    "seed": 7,
+    "num_predict": 256
+  },
+  "timeout_s": 180,
+  "frozen": true,
+  "frozen_at": "2026-10-11T06:05:53Z",
+  "purpose": "EXPLORATORY cross-model comparison; identical frozen prompts (rev 2), options and output schema as the headline nemotron3:33b lock. Prompts were developed on nemotron3:33b dev results only."
+}

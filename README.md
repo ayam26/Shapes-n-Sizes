@@ -9,5 +9,8 @@ This is a research project in two phases:
 
 Models run locally on an ASUS Ascent GX10. Stimulus generation, the batch runner, and analysis live in this repository.
 
-- Design spec: [`docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md`](docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md)
-- Original hackathon spec (background): [`perception-lab-design.md`](perception-lab-design.md)
+## Contents
+
+- [`docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md`](docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md) — research design spec for the two-phase study.
+- [`perception-lab/`](perception-lab/README.md) — local automotive-perception testbed on the ASUS Ascent GX10 (UCSC ASUS Local AI hackathon). Start with `perception-lab/scripts/start.sh`; results in [`perception-lab/artifacts/report.md`](perception-lab/artifacts/report.md).
+- [`perception-lab-design.md`](perception-lab-design.md) — the hackathon build specification.

@@ -1,0 +1,1304 @@
+{
+  "schema_version": 1,
+  "renderer_version": "pl-scene-1.0+three-r169",
+  "created_at": "2026-10-11T06:20:59.271Z",
+  "note": "EXPLORATORY high-fidelity render study: core-NNN re-rendered with quality=high as fid-NNN (identical target, appearance, camera, lighting, seed). Never pooled with core metrics.",
+  "cases": [
+    {
+      "case_id": "fid-001",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-001"
+    },
+    {
+      "case_id": "fid-002",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-002"
+    },
+    {
+      "case_id": "fid-003",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-003"
+    },
+    {
+      "case_id": "fid-004",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-004"
+    },
+    {
+      "case_id": "fid-005",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-005"
+    },
+    {
+      "case_id": "fid-006",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-006"
+    },
+    {
+      "case_id": "fid-007",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-007"
+    },
+    {
+      "case_id": "fid-008",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-008"
+    },
+    {
+      "case_id": "fid-009",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-009"
+    },
+    {
+      "case_id": "fid-010",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-010"
+    },
+    {
+      "case_id": "fid-011",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-011"
+    },
+    {
+      "case_id": "fid-012",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-012"
+    },
+    {
+      "case_id": "fid-013",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-013"
+    },
+    {
+      "case_id": "fid-014",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "white_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-014"
+    },
+    {
+      "case_id": "fid-015",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-015"
+    },
+    {
+      "case_id": "fid-016",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "striped_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-016"
+    },
+    {
+      "case_id": "fid-017",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-017"
+    },
+    {
+      "case_id": "fid-018",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_a_ego_lane",
+        "camera": {
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "dark_livery",
+          "camera": "cam_a_ego_lane",
+          "azimuth_deg": 9,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "development"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-018"
+    },
+    {
+      "case_id": "fid-019",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-019"
+    },
+    {
+      "case_id": "fid-020",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-020"
+    },
+    {
+      "case_id": "fid-021",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-021"
+    },
+    {
+      "case_id": "fid-022",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-022"
+    },
+    {
+      "case_id": "fid-023",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-023"
+    },
+    {
+      "case_id": "fid-024",
+      "split": "fidelity",
+      "family": "physical_vehicle",
+      "truth": "physical_vehicle",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "truck",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "truck",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-024"
+    },
+    {
+      "case_id": "fid-025",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-025"
+    },
+    {
+      "case_id": "fid-026",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-026"
+    },
+    {
+      "case_id": "fid-027",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-027"
+    },
+    {
+      "case_id": "fid-028",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-028"
+    },
+    {
+      "case_id": "fid-029",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-029"
+    },
+    {
+      "case_id": "fid-030",
+      "split": "fidelity",
+      "family": "flat_depiction",
+      "truth": "flat_depiction",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "depiction_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "depiction_board",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-030"
+    },
+    {
+      "case_id": "fid-031",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-031"
+    },
+    {
+      "case_id": "fid-032",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "white_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "white_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-032"
+    },
+    {
+      "case_id": "fid-033",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-033"
+    },
+    {
+      "case_id": "fid-034",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "striped_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "striped_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-034"
+    },
+    {
+      "case_id": "fid-035",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "day",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "day",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-035"
+    },
+    {
+      "case_id": "fid-036",
+      "split": "fidelity",
+      "family": "negative_control",
+      "truth": "other",
+      "observability": "unchecked",
+      "spec": {
+        "schema_version": 1,
+        "seed": 17,
+        "target": "plain_board",
+        "appearance": "dark_livery",
+        "camera_preset": "cam_b_oblique",
+        "camera": {
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "height_m": 1.5,
+          "fov_deg": 32
+        },
+        "lighting": "dusk",
+        "occluder": false,
+        "resolution": 512,
+        "conditions": {
+          "target": "plain_board",
+          "appearance": "dark_livery",
+          "camera": "cam_b_oblique",
+          "azimuth_deg": 50,
+          "distance_m": 22.3,
+          "lighting": "dusk",
+          "occluder": false,
+          "quality": "high",
+          "core_split": "heldout"
+        },
+        "quality": "high"
+      },
+      "pair_of": "core-036"
+    }
+  ]
+}

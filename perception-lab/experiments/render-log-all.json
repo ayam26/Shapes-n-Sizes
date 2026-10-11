@@ -1,0 +1,1246 @@
+{
+  "renderer_version": "pl-scene-1.0+three-r169",
+  "rendered_at": "2026-10-11T05:42:31.289Z",
+  "cases": [
+    {
+      "case_id": "core-001",
+      "sha256_client": "9d7ec99445ad3efac05bc29a49f704ff31a29b82d0863b61e813acdfb42f02df",
+      "bytes": 47054,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-001",
+        "image_sha256": "9d7ec99445ad3efac05bc29a49f704ff31a29b82d0863b61e813acdfb42f02df",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-002",
+      "sha256_client": "69598833fbcab2f766b05b943f733f38a216fd0375130514e32107f0b876fd7a",
+      "bytes": 57915,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-002",
+        "image_sha256": "69598833fbcab2f766b05b943f733f38a216fd0375130514e32107f0b876fd7a",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-003",
+      "sha256_client": "bbbb95115c53911a6edf6534ec709b8111d2735155008984bbaca959defdbed7",
+      "bytes": 50216,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-003",
+        "image_sha256": "bbbb95115c53911a6edf6534ec709b8111d2735155008984bbaca959defdbed7",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-004",
+      "sha256_client": "3c6d5ed63a6dcba381c0bb5e03135a240d16039a8c4d309dc5eaa2bc21b5a656",
+      "bytes": 59686,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-004",
+        "image_sha256": "3c6d5ed63a6dcba381c0bb5e03135a240d16039a8c4d309dc5eaa2bc21b5a656",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-005",
+      "sha256_client": "d3331cddcb4cdc1ac87da5a42f2bf19f5c48148fc1fc901101ce8e8e3f41351c",
+      "bytes": 47073,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-005",
+        "image_sha256": "d3331cddcb4cdc1ac87da5a42f2bf19f5c48148fc1fc901101ce8e8e3f41351c",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-006",
+      "sha256_client": "91146bcb34ec0e20d79b5d7be53b7fb32bbf9fe68339bf93a80752e21dbd9ca1",
+      "bytes": 57810,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-006",
+        "image_sha256": "91146bcb34ec0e20d79b5d7be53b7fb32bbf9fe68339bf93a80752e21dbd9ca1",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-007",
+      "sha256_client": "fba2ef06403c6762b6c43f507160737ad87954d797882a3bd2026503d5138782",
+      "bytes": 47273,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-007",
+        "image_sha256": "fba2ef06403c6762b6c43f507160737ad87954d797882a3bd2026503d5138782",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-008",
+      "sha256_client": "efcb6c2a0bd533b93590e638b84147088597b56d9997560194eba519e169c282",
+      "bytes": 53237,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-008",
+        "image_sha256": "efcb6c2a0bd533b93590e638b84147088597b56d9997560194eba519e169c282",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-009",
+      "sha256_client": "480dd1fd46d8465a8e7ecbece924410f2c2c1484fb14bec40c244b0caccafc0a",
+      "bytes": 54169,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "4b975d1def1fa025ccbf0bc4e2e0c76c80db710a5d4b0f7cf12b58fa25c9afd8",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-009",
+        "image_sha256": "480dd1fd46d8465a8e7ecbece924410f2c2c1484fb14bec40c244b0caccafc0a",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-010",
+      "sha256_client": "e9f484dd8bebd77d0f05de3d3a6fb366384ec2d0231f05d9c2cb53f4f4dbb1bd",
+      "bytes": 57752,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "4b975d1def1fa025ccbf0bc4e2e0c76c80db710a5d4b0f7cf12b58fa25c9afd8",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-010",
+        "image_sha256": "e9f484dd8bebd77d0f05de3d3a6fb366384ec2d0231f05d9c2cb53f4f4dbb1bd",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-011",
+      "sha256_client": "5cb15bd2217cea47448bc6c9620c75a7983150da086568a027193f9246fb6b81",
+      "bytes": 47080,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "d1091b21894b47286547bccb497e6ff7b0b14e8d04d33f5188a4402af186d659",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-011",
+        "image_sha256": "5cb15bd2217cea47448bc6c9620c75a7983150da086568a027193f9246fb6b81",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-012",
+      "sha256_client": "c57e61c58ba57ff615dcbd9ceebd52ec92a011d2ac224a6b6605273c42872180",
+      "bytes": 52414,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "d1091b21894b47286547bccb497e6ff7b0b14e8d04d33f5188a4402af186d659",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-012",
+        "image_sha256": "c57e61c58ba57ff615dcbd9ceebd52ec92a011d2ac224a6b6605273c42872180",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-013",
+      "sha256_client": "77f52d0eb51e1233287d640beaae6ed1b1582fba72f243de17ddfc4eb38bb93c",
+      "bytes": 36787,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-013",
+        "image_sha256": "77f52d0eb51e1233287d640beaae6ed1b1582fba72f243de17ddfc4eb38bb93c",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-014",
+      "sha256_client": "ea86cfb83c0f1809d8ddf67fbe0feec3ddbc0077beff5e9813d2ff6285130440",
+      "bytes": 47157,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-014",
+        "image_sha256": "ea86cfb83c0f1809d8ddf67fbe0feec3ddbc0077beff5e9813d2ff6285130440",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-015",
+      "sha256_client": "a1968010213f3de4c984a7b3e77132c1a03e12ab8eb872b7ad899a400a6f8f0d",
+      "bytes": 109811,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-015",
+        "image_sha256": "a1968010213f3de4c984a7b3e77132c1a03e12ab8eb872b7ad899a400a6f8f0d",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-016",
+      "sha256_client": "d0245ea2c0a91d8feebf5da1b28d5d728c16acf0ce0d0ea08ae2fa11f62c381b",
+      "bytes": 103854,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-016",
+        "image_sha256": "d0245ea2c0a91d8feebf5da1b28d5d728c16acf0ce0d0ea08ae2fa11f62c381b",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-017",
+      "sha256_client": "dd47a07fa2c697b8d10a98678e7d491a3b6a0cf5b1cba9e89935070311bd9ff9",
+      "bytes": 39118,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-017",
+        "image_sha256": "dd47a07fa2c697b8d10a98678e7d491a3b6a0cf5b1cba9e89935070311bd9ff9",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-018",
+      "sha256_client": "9b550411917afe196d03d72db905340c9d3f296c61135601527543d5d8021d5d",
+      "bytes": 47118,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-018",
+        "image_sha256": "9b550411917afe196d03d72db905340c9d3f296c61135601527543d5d8021d5d",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-019",
+      "sha256_client": "21e836ec2bd306c546518426f87594baa85db1e14309f71008dbae456b7b460d",
+      "bytes": 30216,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-019",
+        "image_sha256": "21e836ec2bd306c546518426f87594baa85db1e14309f71008dbae456b7b460d",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-020",
+      "sha256_client": "045a8d5004de584f655d24ffd2f69e108dacdba1cebc37e3c727d5bf2269c7f3",
+      "bytes": 31312,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-020",
+        "image_sha256": "045a8d5004de584f655d24ffd2f69e108dacdba1cebc37e3c727d5bf2269c7f3",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-021",
+      "sha256_client": "c72bf9fdbd39c9ae895140863e2b54f91217233aa43731edd799c17102731033",
+      "bytes": 93149,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-021",
+        "image_sha256": "c72bf9fdbd39c9ae895140863e2b54f91217233aa43731edd799c17102731033",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-022",
+      "sha256_client": "c55018fc586fb817dc29d59fc176129f33c4464859aad2be85268d1677ec8bbf",
+      "bytes": 82164,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-022",
+        "image_sha256": "c55018fc586fb817dc29d59fc176129f33c4464859aad2be85268d1677ec8bbf",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-023",
+      "sha256_client": "72fea01fd04b04487b248bef359d29964b7e6a548130f83487433bb123881c9b",
+      "bytes": 30551,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-023",
+        "image_sha256": "72fea01fd04b04487b248bef359d29964b7e6a548130f83487433bb123881c9b",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-024",
+      "sha256_client": "c12189fd0b07985516d99a0cadd37d180f150b7914d4416ee85cf1b6046ac3f9",
+      "bytes": 31315,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-024",
+        "image_sha256": "c12189fd0b07985516d99a0cadd37d180f150b7914d4416ee85cf1b6046ac3f9",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-025",
+      "sha256_client": "97b4c810a0692dcd0aa8e8da047f171a920f6f4c032a041f3f79cecf33124212",
+      "bytes": 41525,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-025",
+        "image_sha256": "97b4c810a0692dcd0aa8e8da047f171a920f6f4c032a041f3f79cecf33124212",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-026",
+      "sha256_client": "8ad15836f064085a07c36acd28d44429db97f5a72c622167bc990179174e2985",
+      "bytes": 53385,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-026",
+        "image_sha256": "8ad15836f064085a07c36acd28d44429db97f5a72c622167bc990179174e2985",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-027",
+      "sha256_client": "29a1a2911b80ab548e7ebcb42a075d8e3157754b08c3fa3cb2f9caaaeaba738f",
+      "bytes": 44581,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "4b975d1def1fa025ccbf0bc4e2e0c76c80db710a5d4b0f7cf12b58fa25c9afd8",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-027",
+        "image_sha256": "29a1a2911b80ab548e7ebcb42a075d8e3157754b08c3fa3cb2f9caaaeaba738f",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-028",
+      "sha256_client": "432fcc5345e34d6a5cec1083e7d9a60916b103b62a6c5b7c050daa5c03ee41e8",
+      "bytes": 55589,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "4b975d1def1fa025ccbf0bc4e2e0c76c80db710a5d4b0f7cf12b58fa25c9afd8",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-028",
+        "image_sha256": "432fcc5345e34d6a5cec1083e7d9a60916b103b62a6c5b7c050daa5c03ee41e8",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-029",
+      "sha256_client": "861a0bd7641393c952cb329bb87260678391fdb6fba93e1d149c67fbb4011411",
+      "bytes": 40408,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "d1091b21894b47286547bccb497e6ff7b0b14e8d04d33f5188a4402af186d659",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-029",
+        "image_sha256": "861a0bd7641393c952cb329bb87260678391fdb6fba93e1d149c67fbb4011411",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-030",
+      "sha256_client": "e1b342b7f6a691f2dd4a2adb19c7a73ff5e6af858da9f104dceebc81c156f65f",
+      "bytes": 51945,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "texture_sha256": "d1091b21894b47286547bccb497e6ff7b0b14e8d04d33f5188a4402af186d659",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-030",
+        "image_sha256": "e1b342b7f6a691f2dd4a2adb19c7a73ff5e6af858da9f104dceebc81c156f65f",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-031",
+      "sha256_client": "07e69257dbc41ae94df5e694cc881293bbfae677e27f4d03464a5fca81b8c82a",
+      "bytes": 29586,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-031",
+        "image_sha256": "07e69257dbc41ae94df5e694cc881293bbfae677e27f4d03464a5fca81b8c82a",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-032",
+      "sha256_client": "7c27da150a43c50d8ff05f03711b99a1195839b39623ef93af123863389e79ae",
+      "bytes": 46721,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-032",
+        "image_sha256": "7c27da150a43c50d8ff05f03711b99a1195839b39623ef93af123863389e79ae",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-033",
+      "sha256_client": "1f0973937f00121c432e576d8d6fb6362c349a28b3d9eb1faf0f8b1fc1cc1a48",
+      "bytes": 95996,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-033",
+        "image_sha256": "1f0973937f00121c432e576d8d6fb6362c349a28b3d9eb1faf0f8b1fc1cc1a48",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-034",
+      "sha256_client": "aa7ab35b5ef308d10296d7c4c9a9ccd1afbd40d6d1a7a1b1febae17ed7e7bf16",
+      "bytes": 99487,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-034",
+        "image_sha256": "aa7ab35b5ef308d10296d7c4c9a9ccd1afbd40d6d1a7a1b1febae17ed7e7bf16",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-035",
+      "sha256_client": "46db4eb42dbd64aa5cd148fb47d68b7fd98ab1363fae073782da1d6a08f1966c",
+      "bytes": 29552,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-035",
+        "image_sha256": "46db4eb42dbd64aa5cd148fb47d68b7fd98ab1363fae073782da1d6a08f1966c",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "core-036",
+      "sha256_client": "1d214cac907bbbbb0d54f46ef6eebc98800445e9ea499a64001c92af8a813517",
+      "bytes": 46573,
+      "marker": {
+        "x": 3,
+        "y": 111,
+        "w": 436,
+        "h": 243
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "core-036",
+        "image_sha256": "1d214cac907bbbbb0d54f46ef6eebc98800445e9ea499a64001c92af8a813517",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-001",
+      "sha256_client": "d0cf695c36a352cb05c3158bde15e36c7ed5df938eeff7f8e61ca0deb586d71c",
+      "bytes": 38651,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-001",
+        "image_sha256": "d0cf695c36a352cb05c3158bde15e36c7ed5df938eeff7f8e61ca0deb586d71c",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-002",
+      "sha256_client": "5474a0f865fd2856c981cd3ea1c04181e13eb732e13cf8dc347b605537733bc1",
+      "bytes": 43767,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-002",
+        "image_sha256": "5474a0f865fd2856c981cd3ea1c04181e13eb732e13cf8dc347b605537733bc1",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-003",
+      "sha256_client": "942aee90f0b44721a452dfdec3585c0186d543e9afc95db0af89ae1566499d28",
+      "bytes": 45622,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-003",
+        "image_sha256": "942aee90f0b44721a452dfdec3585c0186d543e9afc95db0af89ae1566499d28",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-004",
+      "sha256_client": "395d614262b2cc83488e8af1baedf8739a24fb55a88c5c663f73f63d5a0142c0",
+      "bytes": 33146,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-004",
+        "image_sha256": "395d614262b2cc83488e8af1baedf8739a24fb55a88c5c663f73f63d5a0142c0",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-005",
+      "sha256_client": "26d75945f099225bb013b3369b93fd8af0a0d3081a87c2714297b442e35e715a",
+      "bytes": 24050,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-005",
+        "image_sha256": "26d75945f099225bb013b3369b93fd8af0a0d3081a87c2714297b442e35e715a",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-006",
+      "sha256_client": "4d42ed824e321b5817d5f7a58f69a2a2ac789bc4a64deaaf43568d5827fb4187",
+      "bytes": 20936,
+      "marker": {
+        "x": 2,
+        "y": 2,
+        "w": 452,
+        "h": 437
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-006",
+        "image_sha256": "4d42ed824e321b5817d5f7a58f69a2a2ac789bc4a64deaaf43568d5827fb4187",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-007",
+      "sha256_client": "ca34cbbcdf4160446c63bfcc6f68bf89ef39a1d5618b6a78ec0bbcd4dcec3b9e",
+      "bytes": 44825,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-007",
+        "image_sha256": "ca34cbbcdf4160446c63bfcc6f68bf89ef39a1d5618b6a78ec0bbcd4dcec3b9e",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-008",
+      "sha256_client": "6d9dff0241dba4e838377b7790f38d9840a69a914b25a3f84fc2e50ca57db964",
+      "bytes": 58862,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-008",
+        "image_sha256": "6d9dff0241dba4e838377b7790f38d9840a69a914b25a3f84fc2e50ca57db964",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-009",
+      "sha256_client": "cbeac04e128b6adc846b6b06ec4f8041661d88ef0ea9ec9b8be2a90950e7086e",
+      "bytes": 44072,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-009",
+        "image_sha256": "cbeac04e128b6adc846b6b06ec4f8041661d88ef0ea9ec9b8be2a90950e7086e",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-010",
+      "sha256_client": "1b5fc13a14c78ca596b2a3ca7ea6722addac4d62ec63d26fc6ced0e2ac52ba08",
+      "bytes": 58129,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-010",
+        "image_sha256": "1b5fc13a14c78ca596b2a3ca7ea6722addac4d62ec63d26fc6ced0e2ac52ba08",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-011",
+      "sha256_client": "6edf00edec22213710ff153a83908cb286d8c3b06a9f2da7a1f6eb12ead30016",
+      "bytes": 38325,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-011",
+        "image_sha256": "6edf00edec22213710ff153a83908cb286d8c3b06a9f2da7a1f6eb12ead30016",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-012",
+      "sha256_client": "441a24d5729a96cec634e2a26c559a6c1a1e7a598acd3261bca33367d48f4b5f",
+      "bytes": 54745,
+      "marker": {
+        "x": 166,
+        "y": 166,
+        "w": 157,
+        "h": 153
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-012",
+        "image_sha256": "441a24d5729a96cec634e2a26c559a6c1a1e7a598acd3261bca33367d48f4b5f",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-013",
+      "sha256_client": "8645ab253204fe26d2e4e1a5fc232becc03e0b69391750b94f35766e0b730f46",
+      "bytes": 41826,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-013",
+        "image_sha256": "8645ab253204fe26d2e4e1a5fc232becc03e0b69391750b94f35766e0b730f46",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-014",
+      "sha256_client": "036784f9a2ca91f92fdecfc4d0bb09f5b4e5ea4d7c69a9faa3118402db64a3ae",
+      "bytes": 55016,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-014",
+        "image_sha256": "036784f9a2ca91f92fdecfc4d0bb09f5b4e5ea4d7c69a9faa3118402db64a3ae",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-015",
+      "sha256_client": "31434dc6ef22d028e003500598efd3b675e2543f25ba84d6e369b668edec3aae",
+      "bytes": 50269,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-015",
+        "image_sha256": "31434dc6ef22d028e003500598efd3b675e2543f25ba84d6e369b668edec3aae",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-016",
+      "sha256_client": "7b7612370a277deb281b83664da1529b01408234fc80382214ce1da6bbe3e1b5",
+      "bytes": 56526,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-016",
+        "image_sha256": "7b7612370a277deb281b83664da1529b01408234fc80382214ce1da6bbe3e1b5",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-017",
+      "sha256_client": "f52ed854887464e52c492a46c8bb2341c4ccb7ff063a22dd68d0585bc12ca398",
+      "bytes": 37909,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-017",
+        "image_sha256": "f52ed854887464e52c492a46c8bb2341c4ccb7ff063a22dd68d0585bc12ca398",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-018",
+      "sha256_client": "61f42ab4f2235ddd1d35fffffd3d456757361f28949ca56a5f2003f03836499d",
+      "bytes": 49200,
+      "marker": {
+        "x": 49,
+        "y": 108,
+        "w": 332,
+        "h": 248
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-018",
+        "image_sha256": "61f42ab4f2235ddd1d35fffffd3d456757361f28949ca56a5f2003f03836499d",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-019",
+      "sha256_client": "1c10d60d2c17a83f6a345496f4ec326a2b575fc026bd3814659025a69b985eb3",
+      "bytes": 39998,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-019",
+        "image_sha256": "1c10d60d2c17a83f6a345496f4ec326a2b575fc026bd3814659025a69b985eb3",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-020",
+      "sha256_client": "2c534b98c59f34325576292ca2a02c30cce00cf62eb5be572a96b76e4784e61a",
+      "bytes": 44948,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-020",
+        "image_sha256": "2c534b98c59f34325576292ca2a02c30cce00cf62eb5be572a96b76e4784e61a",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-021",
+      "sha256_client": "76f292be2629fce1daa9b16039c344211b063a170111897eeed39f1fae5d115f",
+      "bytes": 39459,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-021",
+        "image_sha256": "76f292be2629fce1daa9b16039c344211b063a170111897eeed39f1fae5d115f",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-022",
+      "sha256_client": "9236e52def0f51f95080f2ed8a325a7c04acd8d467a4ea2d02fea91e774e498b",
+      "bytes": 44111,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "texture_sha256": "a8b8ac2114b919950162352099a4b8adbd9a85643d0ea8933f9a51eaaaa31036",
+      "texture_matches_saved": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-022",
+        "image_sha256": "9236e52def0f51f95080f2ed8a325a7c04acd8d467a4ea2d02fea91e774e498b",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-023",
+      "sha256_client": "7bf9f5616fee1ddfd9c6668a7f6d0ddd6ab74b5b1d914b58fb396ffd914ffbf1",
+      "bytes": 35241,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-023",
+        "image_sha256": "7bf9f5616fee1ddfd9c6668a7f6d0ddd6ab74b5b1d914b58fb396ffd914ffbf1",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    },
+    {
+      "case_id": "disc-024",
+      "sha256_client": "03593fc18a6ec29e09643e07aecded23d4225aeff5ba56b6104a5967026f4fe7",
+      "bytes": 41623,
+      "marker": {
+        "x": 110,
+        "y": 109,
+        "w": 252,
+        "h": 246
+      },
+      "deterministic": true,
+      "upload": 200,
+      "server": {
+        "case_id": "disc-024",
+        "image_sha256": "03593fc18a6ec29e09643e07aecded23d4225aeff5ba56b6104a5967026f4fe7",
+        "width": 512,
+        "height": 512,
+        "existing": false
+      }
+    }
+  ]
+}

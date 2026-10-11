@@ -1,0 +1,19 @@
+{
+  "provider": "ollama",
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "runtime_version": "ollama 0.23.2",
+  "model_id": "nemotron3:33b",
+  "model_digest": "f6d8b7ff496ccc53429cc480ad53971d522b443ee4a5aa58a6da49e57acf42cf",
+  "architecture": "nemotron_h_omni",
+  "parameter_size": "33.0B",
+  "quantization": "Q4_K_M",
+  "think": false,
+  "options": {
+    "temperature": 0,
+    "seed": 7,
+    "num_predict": 256
+  },
+  "timeout_s": 180,
+  "frozen": true,
+  "frozen_at": "2026-10-11T05:46:21Z"
+}
