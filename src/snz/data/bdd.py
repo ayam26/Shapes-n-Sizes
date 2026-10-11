@@ -22,6 +22,7 @@ MIN_BOX_SIDE = 1.0  # px; torchvision rejects zero-area boxes
 
 TRAIN_SPLITS = ("train", "id-val")
 TEST_SPLITS = ("t-clean", "t-night", "t-rain", "t-snow", "t-fog")
+DESCRIPTIVE_SPLITS = ("t-dusk", "t-overcast")  # reported, no hypothesis (spec §4.2)
 
 
 @dataclass(frozen=True)
@@ -107,6 +108,8 @@ VAL_RULES: dict[str, Callable[[Frame], bool]] = {
     "t-rain": _day_with("rainy"),
     "t-snow": _day_with("snowy"),
     "t-fog": _day_with("foggy"),
+    "t-dusk": lambda f: f.timeofday == "dawn/dusk",
+    "t-overcast": _day_with("overcast"),
 }
 
 

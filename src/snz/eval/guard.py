@@ -9,6 +9,7 @@ from pathlib import Path
 from snz.data.bdd import TEST_SPLITS, TRAIN_SPLITS
 
 PREREG_TAG = "prereg-v1"
+MANIFEST_FOR = {"t-texture": "t-clean"}  # T-texture = stylized copies of the T-clean images
 
 
 def _names(manifest: Path) -> set[str]:
@@ -25,7 +26,8 @@ def ensure_split_allowed(
     images may appear in a test-split manifest next to it, so a mislabeled `--split`
     cannot open a test split.
     """
-    if manifest is not None and Path(manifest).stem != split:
+    expected = MANIFEST_FOR.get(split, split)
+    if manifest is not None and Path(manifest).stem != expected:
         raise ValueError(f"manifest {manifest} does not match --split {split!r}")
     tags = subprocess.run(["git", "tag", "--list", PREREG_TAG], cwd=repo, capture_output=True,
                           text=True, check=True).stdout.split()

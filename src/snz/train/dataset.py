@@ -7,7 +7,7 @@ so data is identical across worker counts and across a resumed run.
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import torch
@@ -56,6 +56,7 @@ class BDDDetection(Dataset):
         seed: int = 0,
         train: bool = True,
         hflip_p: float = 0.5,
+        file_name: Callable[[str], str] | None = None,
     ):
         self.frames = list(frames)
         self.image_dir = Path(image_dir)
@@ -65,6 +66,7 @@ class BDDDetection(Dataset):
         self.seed = seed
         self.train = train
         self.hflip_p = hflip_p
+        self.file_name = file_name  # eval only: e.g. T-texture copies; records keep frame.name
 
     def __len__(self) -> int:
         return len(self.frames)
@@ -76,7 +78,8 @@ class BDDDetection(Dataset):
         if self.train and self.stylized_dir is not None:
             variant = choose_variant(frame.name, self.seed, epoch, self.p_original, self.n_copies)
         if variant == 0:
-            path = self.image_dir / frame.name
+            name = self.file_name(frame.name) if self.file_name else frame.name
+            path = self.image_dir / name
         else:
             path = self.stylized_dir / stylized_name(frame.name, variant)
             if not path.exists():

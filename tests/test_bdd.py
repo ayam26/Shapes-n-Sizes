@@ -71,15 +71,18 @@ def test_build_splits_membership():
         _f("v_undef.jpg", "undefined", "daytime"),
     ]
     s = build_splits(train, val, seed=0, idval_fraction=0.1)
-    assert list(s) == ["train", "id-val", "t-clean", "t-night", "t-rain", "t-snow", "t-fog"]
+    assert list(s) == ["train", "id-val", "t-clean", "t-night", "t-rain", "t-snow", "t-fog",
+                       "t-dusk", "t-overcast"]
     assert len(s["id-val"]) == 2 and len(s["train"]) == 18
     assert not set(s["train"]) & set(s["id-val"])
     assert "tr_night.jpg" not in s["train"] + s["id-val"]
     assert s["t-clean"] == ["v_clean.jpg"]
     assert s["t-night"] == ["v_night_clear.jpg", "v_night_rain.jpg"]
     assert (s["t-rain"], s["t-snow"], s["t-fog"]) == (["v_rain.jpg"], ["v_snow.jpg"], ["v_fog.jpg"])
+    # dawn/dusk and overcast are reported descriptively (spec §4.2), not in hypothesis sets
+    assert s["t-dusk"] == ["v_dusk.jpg"] and s["t-overcast"] == ["v_overcast.jpg"]
     used = {n for split in s.values() for n in split}
-    for excluded in ("v_dusk.jpg", "v_overcast.jpg", "v_pcloudy.jpg", "v_undef.jpg"):
+    for excluded in ("v_pcloudy.jpg", "v_undef.jpg"):
         assert excluded not in used
 
 

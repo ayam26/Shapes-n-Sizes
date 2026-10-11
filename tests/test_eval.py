@@ -104,3 +104,27 @@ def test_ignore_regions_do_not_count_as_false_detections():
     dets = [_det("a.jpg", ("car", 0, 0, 10, 10, 0.9), ("car", 50, 50, 70, 70, 0.95))]
     r = evaluate(frames, dets)
     assert r["mAP"] == pytest.approx(1.0)
+
+
+def test_guard_pairs_t_texture_with_t_clean_manifest(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q",
+                    "--allow-empty", "-m", "x"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "tag", "prereg-v1"], cwd=tmp_path, check=True)
+    m = tmp_path / "manifests"
+    m.mkdir()
+    (m / "t-clean.csv").write_text("name,sha256\na.jpg,h1\n")
+    (m / "id-val.csv").write_text("name,sha256\nb.jpg,h2\n")
+    ensure_split_allowed("t-texture", tmp_path, manifest=m / "t-clean.csv")
+    with pytest.raises(ValueError, match="id-val.csv"):
+        ensure_split_allowed("t-texture", tmp_path, manifest=m / "id-val.csv")
+
+
+def test_predict_reads_mapped_files_but_keeps_names(tmp_path):
+    frames = [_frame("f0.jpg", ("car", 5, 5, 30, 30))]
+    write_image(tmp_path / "sty" / "f0_s1.jpg", size=(64, 48))
+    torch.manual_seed(0)
+    model = build_model(resnet50(weights=None).state_dict(), min_size=48, max_size=64)
+    records = predict(model, frames, tmp_path / "sty", device="cpu", num_workers=0,
+                      file_name=lambda n: n.replace(".jpg", "_s1.jpg"))
+    assert [r["name"] for r in records] == ["f0.jpg"]

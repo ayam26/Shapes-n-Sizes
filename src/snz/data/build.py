@@ -6,7 +6,14 @@ import csv
 import json
 from pathlib import Path
 
-from snz.data.bdd import TEST_SPLITS, TRAIN_SPLITS, LoadStats, build_splits, load_frames
+from snz.data.bdd import (
+    DESCRIPTIVE_SPLITS,
+    TEST_SPLITS,
+    TRAIN_SPLITS,
+    LoadStats,
+    build_splits,
+    load_frames,
+)
 from snz.data.manifest import check_disjoint, drop_hash_duplicates, hash_rows, write_manifest
 
 
@@ -29,7 +36,8 @@ def build_and_write_splits(
     val_frames, val_stats = load_frames(val_labels)
     names = build_splits(train_frames, val_frames, seed, idval_fraction)
 
-    rows = {s: hash_rows(names[s], val_images) for s in TEST_SPLITS}
+    held_out = (*TEST_SPLITS, *DESCRIPTIVE_SPLITS)
+    rows = {s: hash_rows(names[s], val_images) for s in held_out}
     forbidden = {h for split_rows in rows.values() for _, h in split_rows}
     dropped_log = []
     # train first: its hashes are then also forbidden in id-val
@@ -38,12 +46,13 @@ def build_and_write_splits(
         rows[s] = kept
         dropped_log += [(s, name, h) for name, h in dropped]
         forbidden |= {h for _, h in kept}
-    rows = {s: rows[s] for s in (*TRAIN_SPLITS, *TEST_SPLITS)}
+    rows = {s: rows[s] for s in (*TRAIN_SPLITS, *held_out)}
     check_disjoint(rows)
+    rows["val-all"] = hash_rows(sorted(f.name for f in val_frames), val_images)
 
     for split, split_rows in rows.items():
         write_manifest(out_dir / f"{split}.csv", split_rows)
-    by_hash = {h: (s, n) for s in (*TEST_SPLITS, "train") for n, h in rows[s]}
+    by_hash = {h: (s, n) for s in (*held_out, "train") for n, h in rows[s]}
     with open(out_dir / "dropped_duplicates.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["split", "name", "sha256", "duplicate_of_split", "duplicate_of_name"])

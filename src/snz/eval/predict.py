@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import torch
@@ -22,9 +22,11 @@ def predict(
     device: str,
     batch_size: int = 4,
     num_workers: int = 4,
+    file_name: Callable[[str], str] | None = None,
 ) -> list[dict]:
     model.eval().to(device)
-    loader = DataLoader(BDDDetection(frames, image_dir, train=False), batch_size=batch_size,
+    dataset = BDDDetection(frames, image_dir, train=False, file_name=file_name)
+    loader = DataLoader(dataset, batch_size=batch_size,
                         shuffle=False, num_workers=num_workers, collate_fn=collate)
     records, names = [], iter(f.name for f in frames)
     for images, _ in loader:

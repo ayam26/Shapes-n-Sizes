@@ -107,3 +107,13 @@ def test_cli_build_splits(tmp_path):
     ])
     assert code == 0
     assert (tmp_path / "m" / "t-night.csv").exists()
+
+
+def test_val_all_manifest_lists_every_val_frame(tmp_path):
+    tl, vl = _fixture(tmp_path)
+    out = tmp_path / "m"
+    summary = build_and_write_splits(tl, vl, tmp_path / "train", tmp_path / "val", out,
+                                     seed=0, idval_fraction=0.2)
+    assert sorted(n for n, _ in read_manifest(out / "val-all.csv")) == [
+        "v_clean.jpg", "v_night.jpg", "v_rain.jpg"]
+    assert summary["counts"]["val-all"] == 3 and (out / "t-dusk.csv").exists()

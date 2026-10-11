@@ -74,3 +74,11 @@ def test_ignore_boxes_are_not_training_targets():
     f = Frame("a.jpg", "clear", "daytime",
               (Box("car", 1, 2, 30, 40), Box("truck", 0, 0, 5, 5, ignore=True)))
     assert frame_target(f)["boxes"].tolist() == [[1, 2, 30, 40]]
+
+
+def test_eval_file_name_mapping_reads_stylized_copy(tmp_path):
+    frames = _frames(tmp_path, n=1)
+    ds = BDDDetection(frames, tmp_path / "sty", train=False,
+                      file_name=lambda n: n.replace(".jpg", "_s1.jpg"))
+    image, target = ds[0]
+    assert image.mean() > 0.5 and target["boxes"].tolist() == [[10, 5, 20, 15]]

@@ -67,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
     p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
     p.add_argument("--out", type=Path, required=True, help="directory for detections + metrics")
+    p.add_argument("--stylized-copy", type=int, help="read <stem>_s<N>.jpg (T-texture: 1)")
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_evaluate)
 
@@ -167,7 +168,13 @@ def _cmd_evaluate(args) -> int:
     model = build_model(None, trainable_layers=recipe.trainable_layers,
                         min_size=tuple(recipe.min_sizes), max_size=recipe.max_size)
     model.load_state_dict(torch.load(args.checkpoint, map_location="cpu", weights_only=True))
-    records = predict(model, frames, args.images, device=args.device)
+    file_name = None
+    if args.stylized_copy is not None:
+        from snz.stylize.build import stylized_name
+
+        copy = args.stylized_copy
+        file_name = lambda n: stylized_name(n, copy)  # noqa: E731
+    records = predict(model, frames, args.images, device=args.device, file_name=file_name)
     args.out.mkdir(parents=True, exist_ok=True)
     write_detections(args.out / f"{args.split}.detections.jsonl", records)
     metrics = {"split": args.split, "checkpoint": str(args.checkpoint),
