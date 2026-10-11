@@ -14,3 +14,5 @@ perception-lab/state/lock*
 *.pth.tar
 .pytest_cache/
 .ruff_cache/
+# rendered demos contain BDD100K frames (research license): keep local
+/demo/

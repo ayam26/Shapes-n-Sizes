@@ -142,3 +142,29 @@ scripts/run_gnn.sh analyze    # results/gnn/analysis.json + report.md
 ```
 
 Fallback segmenter: `SNZ_SEGMENTER=grabcut scripts/run_gnn.sh outlines`.
+
+## Demo (GX10; see `docs/presentation.md` §5)
+
+Outputs go to `demo/` (git-ignored: they contain BDD100K frames). View them on a laptop with an
+SSH tunnel: on the GX10 `python3 -m http.server 8000 --directory demo`, on the laptop
+`ssh -L 8000:localhost:8000 asus@<gx10>` and open http://localhost:8000.
+
+```bash
+D=~/snz-data; G=$D/gnn; L=$D/bdd100k/labels/det_2018
+# 1. Gallery: BASE | GNN | RGB on night/rain/snow images, each at its equal-recall threshold,
+#    chosen by a fixed rule (6 where the GNN helped most, 3 where it hurt most) + outline graphs
+uv run snz gnn-demo-gallery --runs $G/runs --labels $L/det_val.json \
+  --images $D/bdd100k/images/100k/val --outlines $G/outlines/val-all.npz --models $G/models \
+  --device cuda --out demo/gallery
+# 2. Live: one image through detector -> SAM 2 -> GNN / RGB with ms per stage, plus the
+#    recoloring test (invert | hue | gray). Any JPG/PNG works; with --labels a BDD val image
+#    gets real/false colors.
+uv run snz gnn-demo-live --image $D/bdd100k/images/100k/val/<name>.jpg \
+  --checkpoint $D/runs/BASE-s0/final.pt --models $G/models --labels $L/det_val.json \
+  --recolor invert --out demo/live
+```
+
+`demo/live/live.json` holds the timings (detector, outlines, each second stage), every
+detection's scores and keep/drop verdict per arm, and the recolor comparison (detections matched,
+mean outline IoU, GNN verdict agreement, and a check that the GNN's input is identical when
+colors change).
