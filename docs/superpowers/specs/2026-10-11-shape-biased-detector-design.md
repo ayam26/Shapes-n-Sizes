@@ -2,7 +2,7 @@
 
 - **Date:** 2026-10-11
 - **Status:** design approved in conversation; awaiting review of this written spec
-- **Supersedes:** `2026-10-11-shapes-n-sizes-design.md` (VLM depiction-cue study), kept for history
+- **Supersedes:** an earlier VLM depiction-cue design and the hackathon Perception Lab spec (both removed; see git history)
 - **Pilot work:** `perception-lab/` (hackathon VLM testbed and results), cited as pilot evidence
 - **Deliverable:** an arXiv / workshop-style paper with code, split manifests, preregistration, and result summaries
 
