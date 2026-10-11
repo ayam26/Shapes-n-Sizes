@@ -46,6 +46,22 @@ if (flag("--build-manifest")) {
 }
 
 const manifest = JSON.parse(readFileSync(MANIFEST, "utf8"));
+if (flag("--scene-checks")) {
+  // Design check 3: scene geometry matches metadata; helpers never visible to the sensor camera.
+  const expected = { truck: ["target_truck"], depiction_board: ["target_board"], plain_board: ["target_board"] };
+  const res = [];
+  for (const c of manifest.cases) {
+    const r = await page.evaluate((s) => window.__pl.inspect(s), c.spec);
+    const ok = JSON.stringify(r.targets) === JSON.stringify(expected[c.spec.target]) && !r.helpers_visible_to_sensor
+      && r.sensor_layer_mask === 1 && ({ truck: "physical_vehicle", depiction_board: "flat_depiction", plain_board: "other" })[c.spec.target] === c.truth;
+    res.push({ case_id: c.case_id, target: c.spec.target, truth: c.truth, ...r, ok });
+  }
+  const failed = res.filter((r) => !r.ok);
+  writeFileSync(join(ROOT, "artifacts", "scene-checks.json"), JSON.stringify({ checked: res.length, failed: failed.length, cases: res }, null, 2));
+  console.log(`scene checks: ${res.length - failed.length}/${res.length} ok`, failed.map((f) => f.case_id).join(","));
+  await browser.close();
+  process.exit(failed.length ? 1 : 0);
+}
 let cases = manifest.cases;
 if (opt("--only")) cases = cases.filter((c) => opt("--only").split(",").includes(c.case_id));
 if (opt("--split")) cases = cases.filter((c) => c.split === opt("--split"));
