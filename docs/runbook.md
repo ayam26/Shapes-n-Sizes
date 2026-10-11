@@ -18,17 +18,17 @@ Commit `results/g1_smoke.json`.
 ## G2 — data
 
 1. Read the BDD100K terms and the DTD terms; note the date in the commit message.
-2. Download and build. If the default BDD host does not resolve, get the download links
-   from the registration portal (<https://bdd-data.berkeley.edu>) and pass `BDD_BASE=<url>`,
-   or put the three zip files in `~/snz-data` by hand; the script keeps existing files.
+2. Download and build. The official BDD hosts were offline in 2026; `fetch_bdd.sh`
+   uses the maintainer's Berkeley mirror (`dl.yf.io`) and the **2018 detection labels**
+   (det_20 was not obtainable), converted to `labels/det_2018/det_{train,val}.json`.
 
 ```bash
 BDD_TERMS_ACCEPTED=yes scripts/fetch_bdd.sh
 scripts/fetch_styles.sh
 D=~/snz-data; W=$D/weights
 uv run snz build-splits \
-  --train-labels $D/bdd100k/labels/det_20/det_train.json \
-  --val-labels   $D/bdd100k/labels/det_20/det_val.json \
+  --train-labels $D/bdd100k/labels/det_2018/det_train.json \
+  --val-labels   $D/bdd100k/labels/det_2018/det_val.json \
   --train-images $D/bdd100k/images/100k/train --val-images $D/bdd100k/images/100k/val
 uv run snz stylize --set train --images $D/bdd100k/images/100k/train \
   --styles-root $D/dtd/images --out $D/stylized/train \
@@ -46,9 +46,9 @@ Commit `manifests/`. Both `stylize` runs can be stopped and rerun; finished imag
 D=~/snz-data
 for LR in 0.01 0.02; do
   uv run snz train --pilot --arm BASE --seed 0 --lr $LR --iterations 6000 \
-    --labels $D/bdd100k/labels/det_20/det_train.json --images $D/bdd100k/images/100k/train \
+    --labels $D/bdd100k/labels/det_2018/det_train.json --images $D/bdd100k/images/100k/train \
     --out $D/runs/pilot/lr$LR
-  uv run snz evaluate --split id-val --labels $D/bdd100k/labels/det_20/det_train.json \
+  uv run snz evaluate --split id-val --labels $D/bdd100k/labels/det_2018/det_train.json \
     --manifest manifests/id-val.csv --images $D/bdd100k/images/100k/train \
     --checkpoint $D/runs/pilot/lr$LR/final.pt --out results/pilot/lr$LR
 done

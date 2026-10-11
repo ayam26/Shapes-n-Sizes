@@ -22,6 +22,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--config", type=Path, default=Path("configs/splits.toml"))
     p.set_defaults(func=_cmd_build_splits)
 
+    p = commands.add_parser("convert-labels-2018",
+                            help="BDD 2018 label zip -> det_train.json / det_val.json")
+    p.add_argument("--zip", type=Path, required=True, help="bdd100k_labels.zip")
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(func=_cmd_convert_2018)
+
     p = commands.add_parser("stylize", help="precompute stylized copies (G2)")
     p.add_argument("--set", choices=["train", "t-texture"], required=True)
     p.add_argument("--manifests", type=Path, default=Path("manifests"))
@@ -85,6 +91,13 @@ def _cmd_build_splits(args) -> int:
         args.out, seed=cfg["seed"], idval_fraction=cfg["idval_fraction"],
     )
     print(json.dumps(summary["counts"], indent=2))
+    return 0
+
+
+def _cmd_convert_2018(args) -> int:
+    from snz.data.bdd2018 import write_det20_layout
+
+    print(json.dumps(write_det20_layout(args.zip, args.out)))
     return 0
 
 
