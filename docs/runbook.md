@@ -84,3 +84,24 @@ scripts/run_g6.sh   # predictions on val-all and T-texture per run, then `snz an
 ```
 
 Commit `results/analysis.json` and `results/report.md` (not the detection files).
+
+## G7 — your dashcam footage (after G6)
+
+Footage stays private (never in git). Record video only, no audio.
+
+1. Put the drives in one folder with `drives.csv`:
+   `drive_id,file,time_of_day,weather` (one row per drive; tag each drive).
+2. Sample frames (every N seconds, N chosen for ≥ 2,000 frames; nothing hand-picked):
+   `uv run snz footage-sample --drives ~/footage/drives.csv --out ~/snz-data/footage`
+3. Predict with the seed-0 run of each arm:
+   ```bash
+   for ARM in BASE STY SIN BOTH; do uv run snz footage-predict \
+     --manifest ~/snz-data/footage/footage.csv --frames ~/snz-data/footage/frames \
+     --checkpoint ~/snz-data/runs/$ARM-s0/final.pt; done
+   ```
+4. Build the blind audit (600 items) and label it in a browser; keep the key closed:
+   `uv run snz audit-sample --runs ~/snz-data/runs --frames ~/snz-data/footage/frames --out ~/snz-data/audit --key ~/snz-data/audit_key.json`
+   Open `~/snz-data/audit/index.html`, label every item, click "Download CSV".
+5. Label 100 random frames fully (CVAT or Label Studio, no model pre-annotation), export COCO.
+6. Unblind and score:
+   `uv run snz audit-score --labels audit_labels.csv --key ~/snz-data/audit_key.json --runs ~/snz-data/runs --coco hand_labels.json`

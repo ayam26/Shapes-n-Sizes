@@ -77,6 +77,34 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-frames", type=int, default=2000)
     p.set_defaults(func=_cmd_footage_sample)
 
+    p = commands.add_parser("footage-predict", help="G7: one run's detections on the footage")
+    p.add_argument("--manifest", type=Path, required=True, help="footage.csv")
+    p.add_argument("--frames", type=Path, required=True)
+    p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_footage_predict)
+
+    p = commands.add_parser("audit-sample", help="G7: blind audit items, key and page")
+    p.add_argument("--runs", type=Path, required=True)
+    p.add_argument("--analysis", type=Path, default=Path("results/analysis.json"))
+    p.add_argument("--frames", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True, help="audit page directory")
+    p.add_argument("--key", type=Path, required=True, help="arm key; keep away from the auditor")
+    p.add_argument("--n", type=int, default=150, help="detections per arm")
+    p.add_argument("--seed", type=int, default=0)
+    p.set_defaults(func=_cmd_audit_sample)
+
+    p = commands.add_parser("audit-score", help="G7: unblind and score the audit")
+    p.add_argument("--labels", type=Path, required=True, help="audit_labels.csv")
+    p.add_argument("--labels2", type=Path, help="second auditor (overlap) for Cohen's kappa")
+    p.add_argument("--key", type=Path, required=True)
+    p.add_argument("--runs", type=Path, required=True)
+    p.add_argument("--analysis", type=Path, default=Path("results/analysis.json"))
+    p.add_argument("--coco", type=Path, help="hand-labeled frames (COCO export) for recall")
+    p.add_argument("--out", type=Path, default=Path("results/footage.json"))
+    p.set_defaults(func=_cmd_audit_score)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -208,6 +236,82 @@ def _cmd_footage_sample(args) -> int:
 
     args.out.mkdir(parents=True, exist_ok=True)
     print(json.dumps(sample_footage(args.drives, args.out, args.min_frames), indent=2))
+    return 0
+
+
+def _seed0_footage(runs: Path, analysis: Path) -> tuple[dict, dict]:
+    from snz.eval.predict import read_detections
+
+    thresholds = json.loads(analysis.read_text())["footage_thresholds"]
+    dets, th = {}, {}
+    for arm in ("BASE", "STY", "SIN", "BOTH"):
+        f = runs / f"{arm}-s0" / "eval" / "footage.detections.jsonl"
+        if f.exists():
+            dets[arm] = read_detections(f)
+            th[arm] = thresholds[f"{arm}-s0"]["threshold"]
+    return dets, th
+
+
+def _cmd_footage_predict(args) -> int:
+    import torch
+
+    from snz.data.bdd import Frame
+    from snz.data.manifest import read_manifest
+    from snz.eval.guard import ensure_split_allowed
+    from snz.eval.predict import predict, write_detections
+    from snz.train.config import Recipe
+    from snz.train.model import build_model
+
+    if not args.no_guard:
+        ensure_split_allowed("footage", manifest=args.manifest)
+    recipe = Recipe(**json.loads((args.checkpoint.parent / "run.json").read_text())["recipe"])
+    frames = [Frame(n, "undefined", "undefined", ()) for n, _ in read_manifest(args.manifest)]
+    model = build_model(None, trainable_layers=recipe.trainable_layers,
+                        min_size=tuple(recipe.min_sizes), max_size=recipe.max_size)
+    model.load_state_dict(torch.load(args.checkpoint, map_location="cpu", weights_only=True))
+    records = predict(model, frames, args.frames, device=args.device)
+    write_detections(args.checkpoint.parent / "eval" / "footage.detections.jsonl", records)
+    print(f"{sum(len(r['scores']) for r in records)} detections on {len(records)} frames")
+    return 0
+
+
+def _cmd_audit_sample(args) -> int:
+    from snz.audit.page import build_audit_page
+    from snz.audit.sample import sample_audit
+
+    dets, th = _seed0_footage(args.runs, args.analysis)
+    items, key = sample_audit(dets, th, n_per_arm=args.n, seed=args.seed)
+    page = build_audit_page(items, args.frames, args.out)
+    args.key.parent.mkdir(parents=True, exist_ok=True)
+    args.key.write_text(json.dumps(key, indent=1))
+    print(f"{len(items)} items -> {page}; key -> {args.key} (do not open before scoring)")
+    return 0
+
+
+def _cmd_audit_score(args) -> int:
+    from snz.audit.sample import count_detections
+    from snz.audit.score import (
+        cohen_kappa,
+        footage_recall,
+        load_coco_labels,
+        read_labels,
+        score_audit,
+    )
+
+    dets, th = _seed0_footage(args.runs, args.analysis)
+    key = json.loads(args.key.read_text())
+    labels = read_labels(args.labels)
+    result = {"thresholds": th,
+              "frames": {arm: len(r) for arm, r in dets.items()},
+              "audit": score_audit(labels, key,
+                                   {arm: count_detections(r, th[arm]) for arm, r in dets.items()})}
+    if args.labels2:
+        result["cohen_kappa"] = cohen_kappa(labels, read_labels(args.labels2))
+    if args.coco:
+        result["recall_on_labeled_frames"] = footage_recall(load_coco_labels(args.coco), dets, th)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(result, indent=2))
+    print(json.dumps(result["audit"], indent=2))
     return 0
 
 
