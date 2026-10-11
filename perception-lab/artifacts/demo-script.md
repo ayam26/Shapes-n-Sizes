@@ -31,7 +31,7 @@ It's an image-classification probe, not a driving system."
 - Results → run **heldout-v1**. Gallery filter `pair = neither`, open a plain-board case: "Every plain board, every run,
   is called `flat_depiction` — the model never uses `other` for a blank sign. A real failure; we didn't tune it away."
 - Filter `pair = variant-only`: one case where the structure sentence helped — "and our repeat run shows one-case changes
-  happen by chance, so we don't claim an improvement. Regressions from the variant: zero."
+  happen by chance, so we don't claim an improvement. Regressions from the variant on this model: zero."
 
 ## 2:20–3:00 — Counts, latency, limits
 - Metrics table, held-out row: baseline **6/18**, structure prompt **7/18**, false-vehicle on depictions **0/6**, vehicle recall
@@ -41,7 +41,7 @@ It's an image-classification probe, not a driving system."
   the oblique trucks. So this failure belongs to nemotron3, not to the picture — and model choice mattered more than our prompt
   trick, which actually caused 5 regressions on qwen3.6." (Exploratory, single runs.)
 - Latency: ≈1.2 s baseline, ≈1.4 s with the longer prompt, per request, warm.
-- Limits (one breath): synthetic low-poly scenes may themselves look like drawings; 18 cases per split; one model; no safety
+- Limits (one breath): synthetic low-poly scenes may themselves look like drawings; 18 cases per split; one headline model plus two exploratory single-run comparisons; no safety
   claims. "Everything — images, hashes, prompts, raw outputs, metrics — is exported and re-verified by a script."
 
 If you must avoid waiting, open a stored case from the gallery and say "this is a **recorded** result from run …"; the fresh
