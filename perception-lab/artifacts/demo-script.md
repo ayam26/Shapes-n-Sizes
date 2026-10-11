@@ -37,6 +37,9 @@ It's an image-classification probe, not a driving system."
 - Metrics table, held-out row: baseline **6/18**, structure prompt **7/18**, false-vehicle on depictions **0/6**, vehicle recall
   **0/6 vs 1/6**. "35 of 36 answers were `flat_depiction` — a constant guesser gets 6/18 too. So the honest headline is: from an
   oblique view this model calls our low-poly truck a drawing."
+- Results → run **xmodel-gemma4-heldout-v1**: "Same images, same frozen prompts, different local model: gemma4 gets 17/18 and recognises
+  the oblique trucks. So this failure belongs to nemotron3, not to the picture — and model choice mattered more than our prompt
+  trick, which actually caused 5 regressions on qwen3.6." (Exploratory, single runs.)
 - Latency: ≈1.2 s baseline, ≈1.4 s with the longer prompt, per request, warm.
 - Limits (one breath): synthetic low-poly scenes may themselves look like drawings; 18 cases per split; one model; no safety
   claims. "Everything — images, hashes, prompts, raw outputs, metrics — is exported and re-verified by a script."

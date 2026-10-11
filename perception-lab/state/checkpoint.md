@@ -13,4 +13,4 @@ artifacts/screenshots/, artifacts/demo-script.md, artifacts/environment.md, arti
 
 Frozen: experiments/prompts.json (rev 2, frozen 05:46:21Z), experiments/model-lock.json. Do not modify; held-out results are final.
 Resume: `./scripts/start.sh`, then `python3 scripts/verify_artifacts.py`.
-Optional remaining (not required for MVP): second-model exploratory comparison; higher-fidelity render study.
+Cross-model extension done (runs xmodel-*). Remaining optional: higher-fidelity render study.

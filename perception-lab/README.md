@@ -35,7 +35,12 @@ Backend control on the GX10: `scripts/gx10_backend.sh start|stop|restart|status`
 
 35/36 held-out answers were `flat_depiction` (a constant guesser also scores 6/18). From the oblique camera the model calls our
 low-poly physical truck "a 2D graphic"; it never labels a plain board `other`. The structure prompt's +1 is within run-to-run
-variation (repeat run: 35/36 labels identical). Full analysis, limitations and every number: **[artifacts/report.md](artifacts/report.md)**.
+variation (repeat run: 35/36 labels identical).
+
+Exploratory cross-model check on the same images and frozen prompts (pre-registered lock files): held-out correct/attempted
+`gemma4:26b` **17/18** (both methods), `qwen3.6:35b` **13/18** (both). The oblique-truck failure is specific to nemotron3; the
+plain-board → `flat_depiction` failure also appears for qwen3.6; the structure sentence caused 5 regressions for qwen3.6 on development.
+Full analysis, limitations and every number: **[artifacts/report.md](artifacts/report.md)**.
 
 ## Reproduce
 

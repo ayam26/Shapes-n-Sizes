@@ -1,6 +1,6 @@
 {
-  "verified_at": "2026-10-11T06:01:46.760627+00:00",
-  "passed": 60,
+  "verified_at": "2026-10-11T06:12:15.008860+00:00",
+  "passed": 88,
   "failed": 0,
   "checks": [
     {
@@ -302,6 +302,146 @@
       "check": "run-20261011T055535-5969: held-out prompts equal the frozen prompts file",
       "status": "PASS",
       "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060655-ef8f: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: held-out run used frozen prompts+lock and started after freeze",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060808-2114: held-out prompts equal the frozen prompts file",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T060920-cc47: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: held-out run used frozen prompts+lock and started after freeze",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T061009-49b4: held-out prompts equal the frozen prompts file",
+      "status": "PASS",
+      "detail": ""
     }
   ],
   "runs": [
@@ -357,6 +497,38 @@
       "run_id": "run-20261011T055535-5969",
       "run_key": "heldout-repeat-v1",
       "label": "HELD-OUT REPEAT (test-retest only; headline remains heldout-v1)",
+      "records": 36,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T060655-ef8f",
+      "run_key": "xmodel-qwen3.6-dev-v1",
+      "label": "EXPLORATORY cross-model: qwen3.6, development, frozen prompts rev2",
+      "records": 36,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T060808-2114",
+      "run_key": "xmodel-qwen3.6-heldout-v1",
+      "label": "EXPLORATORY cross-model: qwen3.6, heldout, frozen prompts rev2",
+      "records": 36,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T060920-cc47",
+      "run_key": "xmodel-gemma4-dev-v1",
+      "label": "EXPLORATORY cross-model: gemma4, development, frozen prompts rev2",
+      "records": 36,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T061009-49b4",
+      "run_key": "xmodel-gemma4-heldout-v1",
+      "label": "EXPLORATORY cross-model: gemma4, heldout, frozen prompts rev2",
       "records": 36,
       "offline_guard": true,
       "provider_mode": "live"
