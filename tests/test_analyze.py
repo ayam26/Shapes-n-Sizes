@@ -133,8 +133,9 @@ def test_report_and_cli(tmp_path):
     out = tmp_path / "results"
     assert main(["analyze", "--runs", str(tmp_path / "runs"), "--labels", str(labels),
                  "--manifests", str(manifests), "--out", str(out), "--bootstrap", "20",
-                 "--no-guard"]) == 0
-    assert json.loads((out / "analysis.json").read_text())["n_boot"] == 20
+                 "--seeds", "0", "1", "--no-guard"]) == 0
+    got = json.loads((out / "analysis.json").read_text())
+    assert got["n_boot"] == 20 and got["missing_runs"] == []
     assert "# Results" in (out / "report.md").read_text()
     assert (out / "figures" / "pr_curves.pdf").exists()
 

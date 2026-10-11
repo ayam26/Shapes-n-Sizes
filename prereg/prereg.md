@@ -180,3 +180,22 @@ Command: `snz analyze` (see `docs/runbook.md`, G6).
 | RQ5 footage: instead of the team's own drives, the open comma2k19 dataset (comma.ai, MIT license), **Chunk_1, every segment** (~3.3 h of commute driving, 1164×874 road camera, raw HEVC at a declared 20 fps). The sampling rule, thresholds, audit and recall protocol are otherwise unchanged. | Decision of the project lead: use open-source dashcam footage. Using a whole chunk keeps the "no hand selection" rule. |
 | Drives are tagged time of day / weather "unknown" (comma2k19 has no such tags). | Not available in the source. |
 | comma2k19 uses a different camera and region than BDD100K, so RQ5 also tests transfer across cameras. | Stated as a limitation. |
+
+### Amendment 2 (2026-10-11, before any test split was evaluated): 5-hour total budget
+
+The project's remaining time became 5 hours in total, so the 12-run design (≈2 GX10-days)
+could not run. Decided before any test-split or footage prediction existed:
+
+| Change | Was | Now |
+|---|---|---|
+| Seeds per arm | 3 (0, 1, 2) | 1 (seed 0); arm metric = that run |
+| Input scale | short side 576–720, eval 720 | short side 384–448, eval 448 (max 798) |
+| Schedule | 18,000 iterations, warmup 1,000 | 4,500 iterations (~3.2 epochs), warmup 500 |
+| Order | seed-major | BASE, STY, SIN (confirmatory) then BOTH |
+| T-corrupt | 300 images × 15 × 3 severities | not run |
+
+Recipe sha256 `7f60c2d7978235c15650bac630872cf1c4f38de58a1e9eb07cfe185de501a613`; learning
+rate 0.02, batch 8 and everything else unchanged. A partial BASE seed-0 run under the old
+schedule (7,560 of 18,000 iterations) was stopped and is not used. Hypotheses, metrics,
+operating points and the bootstrap are unchanged; seed spread cannot be reported, and the
+shorter schedule and smaller input lower absolute mAP for every arm alike.

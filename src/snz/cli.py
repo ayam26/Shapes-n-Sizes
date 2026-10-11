@@ -142,6 +142,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", type=Path, default=Path("results"))
     p.add_argument("--bootstrap", type=int, default=2000)
     p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2],
+                   help="training seeds expected per arm (for missing-run reporting)")
     p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=_cmd_analyze)
 
@@ -395,7 +397,7 @@ def _cmd_analyze(args) -> int:
     if not args.no_guard:  # tests only; real analyses read held-out detections
         ensure_split_allowed("t-clean")
     result = analyze(args.runs, args.labels, args.manifests, n_boot=args.bootstrap,
-                     seed=args.seed)
+                     seed=args.seed, seeds=tuple(args.seeds))
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
     (args.out / "report.md").write_text(render_report(result))
