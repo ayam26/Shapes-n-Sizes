@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run ON THE GX10. Manages the Perception Lab API (loopback-only) with a pidfile.
-# Usage: scripts/gx10_backend.sh start|stop|restart|status   (PL_OFFLINE_GUARD=1 to enable outbound guard)
+# Usage: scripts/gx10_backend.sh start|stop|restart|status   (outbound guard ON by default; PL_OFFLINE_GUARD=0 to disable)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PIDF=data/backend.pid; LOG=data/backend.log; PORT=${PL_PORT:-8765}
@@ -11,7 +11,7 @@ case "${1:-status}" in
     if running; then echo "already running pid $(cat $PIDF)"; exit 0; fi
     ROOT=$PWD
     cd backend
-    PL_ROOT="$ROOT" setsid nohup ../.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "$PORT" </dev/null >>"$ROOT/$LOG" 2>&1 &
+    PL_OFFLINE_GUARD="${PL_OFFLINE_GUARD:-1}" PL_ROOT="$ROOT" setsid nohup ../.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port "$PORT" </dev/null >>"$ROOT/$LOG" 2>&1 &
     echo $! >"$ROOT/$PIDF"
     cd "$ROOT"
     for _ in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/api/health" >/dev/null && break; sleep 0.25; done

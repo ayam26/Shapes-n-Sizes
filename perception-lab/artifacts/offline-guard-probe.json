@@ -1,0 +1,1 @@
+{"offline_guard":true,"target":"1.1.1.1:443","result":"blocked: outbound connection to ('1.1.1.1', 443) blocked by PL_OFFLINE_GUARD"}

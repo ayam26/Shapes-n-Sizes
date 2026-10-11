@@ -58,6 +58,25 @@ def health():
     return info
 
 
+@app.get("/api/netguard/probe")
+def netguard_probe():
+    """Attempt one outbound TCP connection from this backend process to show whether the
+    application-level offline guard blocks it. Loopback/LAN serving is unaffected."""
+    import socket
+    s = socket.socket()
+    s.settimeout(2)
+    try:
+        s.connect(("1.1.1.1", 443))
+        result = "connected (outbound allowed)"
+    except ConnectionRefusedError as e:
+        result = f"blocked: {e}" if "PL_OFFLINE_GUARD" in str(e) else f"refused by network: {e}"
+    except OSError as e:
+        result = f"failed: {type(e).__name__}: {e}"
+    finally:
+        s.close()
+    return {"offline_guard": netguard.enabled(), "target": "1.1.1.1:443", "result": result}
+
+
 # ---------- cases ----------
 class CaseMeta(BaseModel):
     case_id: str | None = None
