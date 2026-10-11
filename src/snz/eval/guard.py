@@ -26,7 +26,7 @@ def ensure_split_allowed(
     images may appear in a test-split manifest next to it, so a mislabeled `--split`
     cannot open a test split.
     """
-    expected = MANIFEST_FOR.get(split, split)
+    expected = "t-corrupt" if split.startswith("t-corrupt-") else MANIFEST_FOR.get(split, split)
     if manifest is not None and Path(manifest).stem != expected:
         raise ValueError(f"manifest {manifest} does not match --split {split!r}")
     tags = subprocess.run(["git", "tag", "--list", PREREG_TAG], cwd=repo, capture_output=True,

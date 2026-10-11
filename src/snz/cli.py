@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import functools
 import json
 import tomllib
 from pathlib import Path
@@ -40,6 +41,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_stylize)
 
+    p = commands.add_parser("corrupt", help="T-corrupt (exploratory): corrupted T-clean subset")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--images", type=Path, required=True, help="BDD val images")
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--k", type=int, default=300)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--severities", type=int, nargs="+", default=[1, 3, 5])
+    p.add_argument("--corruptions", nargs="+")
+    p.add_argument("--workers", type=int, default=16)
+    p.set_defaults(func=_cmd_corrupt)
+
     p = commands.add_parser("train", help="train one arm/seed (pilot at G3, full runs at G5)")
     p.add_argument("--arm", choices=["BASE", "STY", "SIN", "BOTH"], required=True)
     p.add_argument("--seed", type=int, required=True)
@@ -67,6 +79,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
     p.add_argument("--out", type=Path, required=True, help="directory for detections + metrics")
     p.add_argument("--stylized-copy", type=int, help="read <stem>_s<N>.jpg (T-texture: 1)")
+    p.add_argument("--corruption", help="T-corrupt: read <stem>__<corruption>_<severity>.jpg")
+    p.add_argument("--severity", type=int)
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_evaluate)
 
@@ -159,6 +174,19 @@ def _cmd_stylize(args) -> int:
     return 0
 
 
+def _cmd_corrupt(args) -> int:
+    from snz.corrupt import CORRUPTIONS, build_t_corrupt, choose_subset
+    from snz.data.manifest import hash_rows, read_manifest, write_manifest
+
+    names = choose_subset([n for n, _ in read_manifest(args.manifests / "t-clean.csv")],
+                          args.k, args.seed)
+    write_manifest(args.manifests / "t-corrupt.csv", hash_rows(names, args.images))
+    rows = build_t_corrupt(names, args.images, args.out, args.corruptions or CORRUPTIONS,
+                           args.severities, args.workers)
+    print(f"{len(rows)} corrupted images in {args.out}")
+    return 0
+
+
 def _cmd_train(args) -> int:
     from snz.data.bdd import load_frames, select_frames
     from snz.data.manifest import read_manifest
@@ -205,7 +233,8 @@ def _cmd_evaluate(args) -> int:
     from snz.train.config import Recipe
     from snz.train.model import build_model
 
-    ensure_split_allowed(args.split, manifest=args.manifest)
+    if not args.no_guard:  # tests only
+        ensure_split_allowed(args.split, manifest=args.manifest)
     run_json = args.checkpoint.parent / "run.json"
     if not run_json.exists():
         raise FileNotFoundError(f"{run_json} missing: evaluate only checkpoints of finished runs")
@@ -219,8 +248,13 @@ def _cmd_evaluate(args) -> int:
     if args.stylized_copy is not None:
         from snz.stylize.build import stylized_name
 
-        copy = args.stylized_copy
-        file_name = lambda n: stylized_name(n, copy)  # noqa: E731
+        # partial, not lambda: DataLoader workers must be able to pickle it
+        file_name = functools.partial(stylized_name, copy=args.stylized_copy)
+    elif args.corruption is not None:
+        from snz.corrupt import corrupt_name
+
+        file_name = functools.partial(corrupt_name, corruption=args.corruption,
+                                      severity=args.severity)
     records = predict(model, frames, args.images, device=args.device, file_name=file_name)
     args.out.mkdir(parents=True, exist_ok=True)
     write_detections(args.out / f"{args.split}.detections.jsonl", records)

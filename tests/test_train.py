@@ -158,3 +158,22 @@ def test_evaluate_uses_the_runs_own_recipe(tmp_path):
     (tmp_path / "run" / "run.json").unlink()
     with pytest.raises(FileNotFoundError, match="run.json"):
         main([*args, "--checkpoint", str(tmp_path / "run" / "final.pt")])
+
+
+def test_evaluate_reads_corrupted_copies(tmp_path):
+    from helpers import frame_json, write_labels
+    from snz.cli import main
+    from snz.corrupt import corrupt_name
+    from snz.data.manifest import write_manifest
+
+    _run(tmp_path, tmp_path / "run", tiny_recipe())
+    for i in range(2):
+        write_image(tmp_path / "tc" / corrupt_name(f"f{i}.jpg", "fog", 3), size=(64, 48))
+    labels = write_labels(tmp_path / "l.json", [frame_json(f"f{i}.jpg") for i in range(2)])
+    write_manifest(tmp_path / "m" / "t-corrupt.csv", [(f"f{i}.jpg", "h") for i in range(2)])
+    assert main(["evaluate", "--split", "t-corrupt-fog-3", "--labels", str(labels),
+                 "--manifest", str(tmp_path / "m" / "t-corrupt.csv"),
+                 "--images", str(tmp_path / "tc"), "--corruption", "fog", "--severity", "3",
+                 "--checkpoint", str(tmp_path / "run" / "final.pt"), "--out", str(tmp_path / "ev"),
+                 "--device", "cpu", "--no-guard"]) == 0
+    assert (tmp_path / "ev" / "t-corrupt-fog-3.detections.jsonl").exists()

@@ -75,6 +75,14 @@ def render_report(r: dict) -> str:
             continue
         lo, hi = c["ci95"]
         lines.append(f"| {name} | {_n(c['estimate'], 4)} | [{_n(lo, 4)}, {_n(hi, 4)}] |")
+    if r.get("t_corrupt"):
+        lines += ["", "## T-corrupt (exploratory, seed-0 runs)", "",
+                  "mPC = mean mAP over corruptions × severities; rPC = mPC / clean mAP on the "
+                  "same image subset (×100 for mAP).", "",
+                  "| Run | Images | Clean mAP | mPC | rPC |", "|---|---|---|---|---|"]
+        for run, c in r["t_corrupt"].items():
+            lines.append(f"| {run} | {c['images']} | {_n(c['clean_mAP'] * 100, 1)} | "
+                         f"{_n(c['mPC'] * 100, 1)} | {_n(c['rPC'], 3)} |")
     lines += ["", "## Footage thresholds (full-val equal recall)", "",
               f"R*_val = {_n(r['footage_R_star'], 4)}.", "", "| Run | Threshold | Flagged |",
               "|---|---|---|"]

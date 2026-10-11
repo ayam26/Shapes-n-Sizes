@@ -133,3 +133,23 @@ def test_report_and_cli(tmp_path):
                  "--no-guard"]) == 0
     assert json.loads((out / "analysis.json").read_text())["n_boot"] == 20
     assert "# Results" in (out / "report.md").read_text()
+
+
+def test_corrupt_section_relative_performance(tmp_path):
+    frames, labels, manifests = _val(tmp_path)
+    _runs(tmp_path, frames)
+    clean = [f["name"] for f in frames
+             if (f["attributes"]["weather"], f["attributes"]["timeofday"]) == ("clear", "daytime")]
+    write_manifest(manifests / "t-corrupt.csv", [(n, "h") for n in clean[:10]])
+    for arm, p in (("BASE", 0.3), ("STY", 0.9)):
+        ev = tmp_path / "runs" / f"{arm}-s0" / "eval"
+        for c in ("fog", "snow"):
+            write_detections(ev / f"t-corrupt-{c}-3.detections.jsonl",
+                             _dets(frames, set(clean[:10]), p, 0.2, 7))
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=10, seed=0)
+    tc = r["t_corrupt"]
+    assert set(tc) == {"BASE-s0", "STY-s0"}
+    assert set(tc["STY-s0"]["mAP"]) == {"fog-3", "snow-3"}
+    assert tc["STY-s0"]["rPC"] > tc["BASE-s0"]["rPC"]
+    from snz.eval.report import render_report
+    assert "T-corrupt" in render_report(r)

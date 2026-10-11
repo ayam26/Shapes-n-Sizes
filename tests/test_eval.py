@@ -128,3 +128,18 @@ def test_predict_reads_mapped_files_but_keeps_names(tmp_path):
     records = predict(model, frames, tmp_path / "sty", device="cpu", num_workers=0,
                       file_name=lambda n: n.replace(".jpg", "_s1.jpg"))
     assert [r["name"] for r in records] == ["f0.jpg"]
+
+
+def test_guard_pairs_t_corrupt_splits_with_their_manifest(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q",
+                    "--allow-empty", "-m", "x"], cwd=tmp_path, check=True)
+    m = tmp_path / "manifests"
+    m.mkdir()
+    (m / "t-corrupt.csv").write_text("name,sha256\na.jpg,h1\n")
+    with pytest.raises(PermissionError):  # held out before the tag
+        ensure_split_allowed("t-corrupt-fog-3", tmp_path, manifest=m / "t-corrupt.csv")
+    subprocess.run(["git", "tag", "prereg-v1"], cwd=tmp_path, check=True)
+    ensure_split_allowed("t-corrupt-fog-3", tmp_path, manifest=m / "t-corrupt.csv")
+    with pytest.raises(ValueError):
+        ensure_split_allowed("t-corrupt-fog-3", tmp_path, manifest=m / "t-clean.csv")

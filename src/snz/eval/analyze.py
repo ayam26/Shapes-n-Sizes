@@ -179,6 +179,24 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
                                  for t in (fd[rs[0]]["by_type"] if rs else {})},
         }
 
+    t_corrupt = {}
+    corrupt_manifest = manifests_dir / "t-corrupt.csv"
+    if corrupt_manifest.exists():
+        subset = [n for n, _ in read_manifest(corrupt_manifest)]
+        sub_frames = select_frames(frames, subset)
+        for run, (_, _, path) in runs.items():
+            files = sorted((path / "eval").glob("t-corrupt-*.detections.jsonl"))
+            if not files:
+                continue
+            clean = APCalculator(matches[run]["val-all"].subset(subset))()["mAP"]
+            maps = {}
+            for f in files:
+                cs = f.name.removeprefix("t-corrupt-").removesuffix(".detections.jsonl")
+                maps[cs] = APCalculator(match_split(sub_frames, read_detections(f)))()["mAP"]
+            t_corrupt[run] = {"images": len(subset), "clean_mAP": clean, "mAP": maps,
+                              "mPC": float(np.mean(list(maps.values()))),
+                              "rPC": _ratio(float(np.mean(list(maps.values()))), clean)}
+
     return {
         "runs": sorted(runs),
         "missing_runs": missing,
@@ -195,4 +213,5 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
         "confirmatory": confirmatory,
         "exploratory": exploratory,
         "arms": arms,
+        "t_corrupt": t_corrupt,
     }

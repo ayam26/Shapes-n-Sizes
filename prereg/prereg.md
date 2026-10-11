@@ -91,8 +91,13 @@ Arm metric = mean over its 3 seeds. Each test compares one arm with BASE.
 
 Descriptive (no test): BASE retention with CI (H1a); clean-cost mAP difference on T-clean for
 every arm (RQ4); BOTH vs BASE and additivity
-((BOTH − BASE) − (STY − BASE) − (SIN − BASE)) on T-shift mAP; every subset separately;
-T-corrupt (exploratory).
+((BOTH − BASE) − (STY − BASE) − (SIN − BASE)) on T-shift mAP; every subset separately.
+
+T-corrupt (exploratory, point estimates only): a fixed random subset of 300 T-clean images
+(seed 0, `manifests/t-corrupt.csv`), all 15 `imagecorruptions` corruptions at severities
+1, 3 and 5 (reproducibly seeded per image), evaluated for the seed-0 run of each arm; reported
+as mPC (mean mAP over corruption × severity) and rPC = mPC / clean mAP on the same subset.
+Reduced from "all corruptions, severities 1–5, all of T-clean" to keep compute modest.
 
 Known confound: STY and BOTH have seen stylization artifacts, which favors them on T-texture;
 T-shift (natural shift) is therefore the primary test.
@@ -144,3 +149,4 @@ Command: `snz analyze` (see `docs/runbook.md`, G6).
 |---|---|---|
 | 2026-10-11 | 2018 BDD detection labels instead of det_20 | official servers offline; det_20 unobtainable |
 | 2026-10-11 | false-detection residual type "near another class" | the spec's four types leave this case unclassified |
+| 2026-10-11 | T-corrupt reduced to 300 images, severities 1/3/5, seed-0 runs | compute; exploratory only |
