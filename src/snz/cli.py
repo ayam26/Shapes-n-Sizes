@@ -194,6 +194,39 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", type=Path, required=True)
     p.set_defaults(func=_cmd_gnn_footage_thresholds)
 
+    p = commands.add_parser("gnn-demo-gallery",
+                            help="demo: BASE | GNN | RGB panels for selected night/weather images")
+    p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s0/eval/ (re-scored)")
+    p.add_argument("--analysis", type=Path, default=Path("results/gnn/analysis.json"))
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--images", type=Path, required=True, help="BDD100K val images")
+    p.add_argument("--out", type=Path, default=Path("demo/gallery"))
+    p.add_argument("--splits", default="t-night,t-rain,t-snow")
+    p.add_argument("--arms", default="BASE,GNN,RGB")
+    p.add_argument("--n-best", type=int, default=6)
+    p.add_argument("--n-worst", type=int, default=3)
+    p.add_argument("--outlines", type=Path, help="val-all.npz: adds outline-graph thumbnails")
+    p.add_argument("--models", type=Path, help="GNN.pt dir: GNN class probabilities")
+    p.add_argument("--device", default="cpu")
+    p.set_defaults(func=_cmd_gnn_demo_gallery)
+
+    p = commands.add_parser("gnn-demo-live",
+                            help="demo: one image through detector, SAM 2 and second stages")
+    p.add_argument("--image", type=Path, required=True)
+    p.add_argument("--checkpoint", type=Path, required=True, help="runs/BASE-s0/final.pt")
+    p.add_argument("--models", type=Path, required=True,
+                   help="dir with GNN.pt, RGB.pt, *.fusion.json")
+    p.add_argument("--analysis", type=Path, default=Path("results/gnn/analysis.json"))
+    p.add_argument("--arms", default="BASE,GNN,RGB")
+    p.add_argument("--recolor", choices=["none", "hue", "invert", "gray"], default="none")
+    p.add_argument("--labels", type=Path, help="optional BDD labels: color boxes real/false")
+    p.add_argument("--segmenter", choices=["sam2", "grabcut"], default="sam2")
+    p.add_argument("--sam2-checkpoint", type=Path)
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--out", type=Path, default=Path("demo/live"))
+    p.set_defaults(func=_cmd_gnn_demo_live)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -554,6 +587,59 @@ def _cmd_gnn_analyze(args) -> int:
     (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
     (args.out / "report.md").write_text(render_gnn_report(result))
     print((args.out / "report.md").read_text())
+    return 0
+
+
+def _cmd_gnn_demo_gallery(args) -> int:
+    from snz.gnn.demo import build_gallery
+
+    g = build_gallery(runs_root=args.runs, analysis_path=args.analysis, labels=args.labels,
+                      manifests_dir=args.manifests, image_dir=args.images, out=args.out,
+                      splits=[s for s in args.splits.split(",") if s],
+                      arms=[a for a in args.arms.split(",") if a], n_best=args.n_best,
+                      n_worst=args.n_worst, outlines=args.outlines, models_dir=args.models,
+                      device=args.device)
+    print(json.dumps({k: g[k] for k in ("best", "worst", "images_considered")}, indent=2))
+    print(f"open {args.out / 'index.html'}")
+    return 0
+
+
+def _cmd_gnn_demo_live(args) -> int:
+    from PIL import Image
+
+    from snz.gnn import demo
+
+    arms = [a for a in args.arms.split(",") if a]
+    thresholds = demo.load_thresholds(args.analysis, arms)
+    detector = demo.load_detector(args.checkpoint, args.device)
+    segmenter = demo.make_segmenter(args.segmenter, args.device, args.sam2_checkpoint)
+    frame = None
+    if args.labels is not None:
+        from snz.data.bdd import load_frames
+
+        frame = next((f for f in load_frames(args.labels)[0] if f.name == args.image.name), None)
+    args.out.mkdir(parents=True, exist_ok=True)
+
+    def run(path):
+        return demo.run_live(path, detector=detector, segmenter=segmenter, models_dir=args.models,
+                             arms=arms, thresholds=thresholds, device=args.device)
+
+    a = run(args.image)
+    demo.render_live(a, args.out / "live.png", frame)
+    demo.render_live_graphs(a, args.out / "live_graphs.png", args.models, args.device)
+    result = {"original": demo.live_summary(a)}
+    if args.recolor != "none":
+        path = args.out / f"recolored_{args.recolor}.png"
+        demo.recolor(Image.open(args.image), args.recolor).save(path)
+        b = run(path)
+        demo.render_live(b, args.out / "live_recolored.png", frame)
+        result["recolor"] = {"mode": args.recolor, **demo.compare_runs(a, b),
+                             "recolored": demo.live_summary(b)}
+    (args.out / "live.json").write_text(json.dumps(result, indent=2))
+    print(json.dumps({"timings_ms": result["original"]["timings_ms"],
+                      **({"recolor": {k: v for k, v in result["recolor"].items()
+                                      if k != "recolored"}} if "recolor" in result else {})},
+                     indent=2))
     return 0
 
 
