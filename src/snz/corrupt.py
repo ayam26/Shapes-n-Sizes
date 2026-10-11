@@ -19,6 +19,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from snz.filenames import corrupt_name  # noqa: F401 (re-exported)
 from snz.fsutil import atomic_replace
 
 if not hasattr(np, "float_"):
@@ -50,11 +51,7 @@ def _random_noise_seeded(image, mode="gaussian", rng=None, **kw):
 
 _ic.sk.util.random_noise = _random_noise_seeded
 
-CORRUPTIONS = tuple(get_corruption_names("all"))[:15]
-
-
-def corrupt_name(name: str, corruption: str, severity: int) -> str:
-    return f"{Path(name).stem}__{corruption}_{severity}.jpg"
+CORRUPTIONS = tuple(get_corruption_names("common"))  # the 15 standard corruptions
 
 
 def _seed(*parts) -> int:

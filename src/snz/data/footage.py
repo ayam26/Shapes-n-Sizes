@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import math
+import random
 from pathlib import Path
 
 import av
@@ -36,7 +37,9 @@ def video_duration(video: Path) -> float:
         s = c.streams.video[0]
         if s.duration is not None:
             return float(s.duration * s.time_base)
-        return c.duration / av.time_base
+        if c.duration is not None:
+            return c.duration / av.time_base
+    raise ValueError(f"{video}: duration unknown (damaged or still-recording file?)")
 
 
 def extract_frames(video: Path, drive: str, every: float, out_dir: Path
@@ -49,8 +52,13 @@ def extract_frames(video: Path, drive: str, every: float, out_dir: Path
         with av.open(str(video)) as c:
             stream = c.streams.video[0]
             stream.thread_type = "AUTO"
+            # sample times are measured from the first frame, not from pts 0 (MPEG-TS and
+            # stream-copied clips often start at a large timestamp)
+            t0 = float(stream.start_time * stream.time_base) if stream.start_time else 0.0
             for frame in c.decode(stream):
-                while i < len(targets) and targets[i] <= frame.time + 1e-6:
+                if frame.time is None:
+                    continue
+                while i < len(targets) and targets[i] + t0 <= frame.time + 1e-6:
                     t = targets[i]
                     img = frame.to_ndarray(format="rgb24")
                     if img.mean() < BLACK_MEAN:
@@ -95,5 +103,16 @@ def sample_footage(drives_csv: Path, out_dir: Path, min_frames: int = 2000) -> d
         w = csv.DictWriter(f, fieldnames=["drive", "t", "reason"])
         w.writeheader()
         w.writerows(drops)
-    return {"drives": len(drives), "total_seconds": total, "every_seconds": every,
-            "frames": len(rows), "dropped": len(drops)}
+    summary = {"drives": len(drives), "total_seconds": total, "every_seconds": every,
+               "frames": len(rows), "dropped": len(drops)}
+    if len(rows) < min_frames:
+        summary["warning"] = (f"{len(rows)} frames is below the preregistered minimum of "
+                              f"{min_frames}; record more drives in the collection period")
+    return summary
+
+
+def label_sample(footage_manifest: Path, k: int = 100, seed: int = 0) -> list[str]:
+    """The frames to hand-label for recall: a seeded random sample, never hand-picked."""
+    with open(footage_manifest, newline="") as f:
+        names = sorted(r["name"] for r in csv.DictReader(f))
+    return sorted(random.Random(seed).sample(names, min(k, len(names))))

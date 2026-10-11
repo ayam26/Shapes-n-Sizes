@@ -109,18 +109,22 @@ T-shift (natural shift) is therefore the primary test.
   run; AP from those matches, validated against pycocotools (agreement to 1e-6 in tests).
 - Equal-recall operating point: R* = BASE seed-0 recall on pooled T-shift at score ≥ 0.5,
   IoU ≥ 0.5, 9 classes pooled. Each run's threshold is the highest score threshold whose
-  T-shift recall ≥ R*; a run that cannot reach R* is evaluated at its maximum recall and
-  flagged (flagged runs are listed).
+  T-shift recall ≥ R*; a run that cannot reach R* is evaluated at its maximum recall (the
+  highest threshold attaining it) and flagged (flagged runs are listed).
 - False detections per image at that threshold, by type, in order: duplicate (IoU ≥ 0.5 with
   an already-matched same-class box), wrong class (IoU ≥ 0.5 with a box of another class,
   including `train`), poor localization (0.1 ≤ IoU < 0.5 with a same-class box), invented
-  (IoU < 0.1 with every box), and near another class (0.1 ≤ IoU < 0.5 with another class only;
+  (IoU < 0.1 with every ground-truth box, ignore regions included), and near another class (0.1 ≤ IoU < 0.5 with another class only;
   a residual type the spec did not name). Detections on ignore regions are excluded.
 - Uncertainty: paired bootstrap over test images, B = 2,000, seed 0 (T-clean / T-texture
   share one weight matrix, T-shift another); the same resampled image multiset for every run
   in a replicate. 95% percentile CIs for arm − BASE; one-sided p = (1 + #replicates not in the
-  predicted direction) / (B + 1). Thresholds are fixed from the full data, not re-estimated per
-  replicate. Holm over the six tests; supported iff Holm-adjusted p < 0.05.
+  predicted direction) / (B + 1). R* and every run's equal-recall threshold are re-estimated
+  inside each replicate, so threshold-estimation uncertainty is part of the H4 intervals.
+  Holm over all six tests (a test that cannot be computed, e.g. a missing arm, enters the family
+  with p = 1); supported iff Holm-adjusted p < 0.05. BASE retention (H1a) and every arm − BASE
+  subset difference get 95% bootstrap CIs. Our AP is checked against pycocotools on every
+  run's val-all and T-texture predictions (agreement within 0.1 mAP points required).
 - Seed spread (SD, min, max) reported beside every estimate. Every subset is reported,
   including subsets where shape bias does not help.
 
@@ -133,12 +137,15 @@ Command: `snz analyze` (see `docs/runbook.md`, G6).
   unreadable frames dropped, each drop logged; each drive tagged with time of day and weather.
 - Models: seed-0 run of each arm; score threshold per arm = its full-val equal-recall threshold
   (R* defined on all BDD val by the same construction), fixed before any footage is processed.
-- Counts of detections per frame and per class, per arm.
+- Counts of detections per frame and per class, per arm. As on BDD, only the 9 evaluated
+  classes are counted, sampled and audited (`train` detections are left out).
 - Blind precision audit: 150 detections per arm sampled uniformly from all thresholded
   detections (600), shuffled, arm hidden, key stored separately. Labels: real object / correct
   class; real object / wrong class; nothing there (invented); unsure. Precision = correct /
   (items − unsure), Wilson 95% CI.
-- Recall: 100 random frames fully labeled for the 9 classes without model pre-annotation.
+- Recall: 100 frames drawn with `snz footage-label-sample` (seed 0) from the footage manifest,
+  fully labeled for the 9 classes without model pre-annotation; recall and false detections
+  per frame with bootstrap-over-frames 95% CIs.
 - Headline: total detections; estimated real = detections × precision; estimated invented =
   detections × invented share; recall on labeled frames; all with CIs.
 - Faces and plates are blurred in anything published.

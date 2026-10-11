@@ -9,7 +9,10 @@ from collections import Counter
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
-from snz.data.bdd import ALIASES, CLASSES, IGNORED_MAPPING, Box, Frame
+import numpy as np
+
+from snz.data.bdd import ALIASES, CLASSES, EVAL_CLASSES, IGNORED_MAPPING, Box, Frame
+from snz.eval.bootstrap import bootstrap_weights, percentile_ci
 from snz.eval.matching import match_split
 from snz.eval.operating import false_detections, recall_at
 
@@ -67,7 +70,7 @@ def cohen_kappa(a: Mapping[str, str], b: Mapping[str, str]) -> float | None:
     po = sum(a[i] == b[i] for i in common) / len(common)
     ca, cb = Counter(a[i] for i in common), Counter(b[i] for i in common)
     pe = sum(ca[c] * cb[c] for c in set(ca) | set(cb)) / len(common) ** 2
-    return 1.0 if pe == 1 else (po - pe) / (1 - pe)
+    return None if pe == 1 else (po - pe) / (1 - pe)  # undefined when one label is used
 
 
 def load_coco_labels(path: Path) -> list[Frame]:
@@ -90,13 +93,29 @@ def load_coco_labels(path: Path) -> list[Frame]:
                   tuple(boxes[img["id"]])) for img in data["images"]]
 
 
+def detection_counts(records: Sequence[dict], threshold: float) -> dict:
+    """Thresholded detections per class and per frame (9 evaluated classes)."""
+    per_class = Counter(c for r in records for s, c in zip(r["scores"], r["labels"], strict=True)
+                        if s >= threshold and c in EVAL_CLASSES)
+    total = sum(per_class.values())
+    return {"frames": len(records), "total": total, "per_class": dict(per_class),
+            "per_frame_mean": total / len(records) if records else None}
+
+
 def footage_recall(frames: Sequence[Frame], dets_by_arm: Mapping[str, Sequence[dict]],
-                   thresholds: Mapping[str, float]) -> dict:
+                   thresholds: Mapping[str, float], n_boot: int = 2000, seed: int = 0) -> dict:
+    """Recall and false detections on the hand-labeled frames, with bootstrap-over-frames CIs."""
     names = {f.name for f in frames}
+    weights = bootstrap_weights(len(frames), n_boot, seed)
     out = {}
     for arm, dets in dets_by_arm.items():
         m = match_split(frames, [d for d in dets if d["name"] in names])
-        fd = false_detections(m, thresholds[arm])
-        out[arm] = {"frames": len(frames), "recall": recall_at(m, thresholds[arm]),
-                    "false_per_frame": fd["per_image"], "by_type": fd["by_type"]}
+        th = thresholds[arm]
+        fd = false_detections(m, th)
+        rec_b = np.array([recall_at(m, th, w) for w in weights])
+        fd_b = np.array([false_detections(m, th, w)["per_image"] for w in weights])
+        out[arm] = {"frames": len(frames), "recall": recall_at(m, th),
+                    "recall_ci95": percentile_ci(rec_b),
+                    "false_per_frame": fd["per_image"], "false_per_frame_ci95": percentile_ci(fd_b),
+                    "by_type": fd["by_type"]}
     return out

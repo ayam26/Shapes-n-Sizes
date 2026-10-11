@@ -96,9 +96,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--manifest", type=Path, required=True, help="footage.csv")
     p.add_argument("--frames", type=Path, required=True)
     p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
+    p.add_argument("--analysis", type=Path, default=Path("results/analysis.json"),
+                   help="must exist: footage thresholds are fixed before footage is processed")
     p.add_argument("--device", default="cuda")
     p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=_cmd_footage_predict)
+
+    p = commands.add_parser("footage-label-sample", help="G7: the 100 frames to hand-label")
+    p.add_argument("--manifest", type=Path, required=True, help="footage.csv")
+    p.add_argument("--k", type=int, default=100)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--out", type=Path, required=True, help="text file, one frame per line")
+    p.set_defaults(func=_cmd_footage_label_sample)
 
     p = commands.add_parser("audit-sample", help="G7: blind audit items, key and page")
     p.add_argument("--runs", type=Path, required=True)
@@ -195,6 +204,8 @@ def _cmd_train(args) -> int:
     from snz.train.model import load_backbone_state
     from snz.train.train import train_run
 
+    if args.manifest.name != "train.csv":
+        raise SystemExit(f"error: training reads manifests/train.csv only, not {args.manifest}")
     recipe = load_recipe(args.recipe)
     overrides = {k: v for k, v in (("iterations", args.iterations), ("lr", args.lr),
                                    ("batch_size", args.batch_size)) if v is not None}
@@ -251,7 +262,7 @@ def _cmd_evaluate(args) -> int:
         # partial, not lambda: DataLoader workers must be able to pickle it
         file_name = functools.partial(stylized_name, copy=args.stylized_copy)
     elif args.corruption is not None:
-        from snz.corrupt import corrupt_name
+        from snz.filenames import corrupt_name
 
         file_name = functools.partial(corrupt_name, corruption=args.corruption,
                                       severity=args.severity)
@@ -298,6 +309,9 @@ def _cmd_footage_predict(args) -> int:
 
     if not args.no_guard:
         ensure_split_allowed("footage", manifest=args.manifest)
+    if not args.analysis.exists():
+        raise SystemExit(f"error: {args.analysis} missing; run G6 first so the footage "
+                         "thresholds are fixed before any footage is processed")
     recipe = Recipe(**json.loads((args.checkpoint.parent / "run.json").read_text())["recipe"])
     frames = [Frame(n, "undefined", "undefined", ()) for n, _ in read_manifest(args.manifest)]
     model = build_model(None, trainable_layers=recipe.trainable_layers,
@@ -306,6 +320,15 @@ def _cmd_footage_predict(args) -> int:
     records = predict(model, frames, args.frames, device=args.device)
     write_detections(args.checkpoint.parent / "eval" / "footage.detections.jsonl", records)
     print(f"{sum(len(r['scores']) for r in records)} detections on {len(records)} frames")
+    return 0
+
+
+def _cmd_footage_label_sample(args) -> int:
+    from snz.data.footage import label_sample
+
+    names = label_sample(args.manifest, args.k, args.seed)
+    args.out.write_text("\n".join(names) + "\n")
+    print(f"{len(names)} frames to label -> {args.out}")
     return 0
 
 
@@ -326,6 +349,7 @@ def _cmd_audit_score(args) -> int:
     from snz.audit.sample import count_detections
     from snz.audit.score import (
         cohen_kappa,
+        detection_counts,
         footage_recall,
         load_coco_labels,
         read_labels,
@@ -337,6 +361,7 @@ def _cmd_audit_score(args) -> int:
     labels = read_labels(args.labels)
     result = {"thresholds": th,
               "frames": {arm: len(r) for arm, r in dets.items()},
+              "detections": {arm: detection_counts(r, th[arm]) for arm, r in dets.items()},
               "audit": score_audit(labels, key,
                                    {arm: count_detections(r, th[arm]) for arm, r in dets.items()})}
     if args.labels2:

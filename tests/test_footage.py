@@ -61,3 +61,43 @@ def test_cli_footage_sample(tmp_path):
     with pytest.raises(FileNotFoundError, match="missing.mp4"):
         drives.write_text("drive_id,file,time_of_day,weather\nc,missing.mp4,daytime,clear\n")
         main(["footage-sample", "--drives", str(drives), "--out", str(tmp_path / "x")])
+
+
+def make_offset_video(path, seconds=10, fps=5, start=600):
+    with av.open(str(path), "w", format="mpegts",
+                 options={"output_ts_offset": str(start)}) as out:
+        stream = out.add_stream("mpeg4", rate=fps)
+        stream.width, stream.height, stream.pix_fmt = 64, 48, "yuv420p"
+        for i in range(seconds * fps):
+            img = np.full((48, 64, 3), 40 + 20 * (i // fps), np.uint8)
+            for packet in stream.encode(av.VideoFrame.from_ndarray(img, format="rgb24")):
+                out.mux(packet)
+        for packet in stream.encode():
+            out.mux(packet)
+    return path
+
+
+def test_timestamps_not_starting_at_zero(tmp_path):
+    video = make_offset_video(tmp_path / "d.ts")
+    rows, drops = extract_frames(video, "d", 2, tmp_path / "f")
+    assert [r["t"] for r in rows] == [0, 2, 4, 6, 8] and drops == []
+    assert len({r["sha256"] for r in rows}) == 5  # five different frames, not one repeated
+
+
+def test_short_footage_warns(tmp_path):
+    from snz.data.footage import sample_footage
+
+    make_video(tmp_path / "a.mp4", seconds=4, black=(99, 99))
+    (tmp_path / "drives.csv").write_text("drive_id,file,time_of_day,weather\na,a.mp4,day,clear\n")
+    r = sample_footage(tmp_path / "drives.csv", tmp_path / "out", min_frames=2000)
+    assert r["frames"] == 4 and "below" in r["warning"]
+
+
+def test_label_sample_is_random_and_reproducible(tmp_path):
+    from snz.data.footage import label_sample
+    from snz.data.manifest import write_manifest
+
+    write_manifest(tmp_path / "footage.csv", [(f"f{i}.jpg", "h") for i in range(500)])
+    a = label_sample(tmp_path / "footage.csv", 100, seed=0)
+    assert len(a) == 100 == len(set(a)) and a == label_sample(tmp_path / "footage.csv", 100, 0)
+    assert a != [f"f{i}.jpg" for i in range(100)]

@@ -35,7 +35,7 @@ def predict(
                 "name": next(names),
                 "boxes": [[round(v, 2) for v in b] for b in out["boxes"].float().cpu().tolist()],
                 "labels": [CLASSES[i - 1] for i in out["labels"].cpu().tolist()],
-                "scores": [round(s, 5) for s in out["scores"].float().cpu().tolist()],
+                "scores": out["scores"].float().cpu().tolist(),  # unrounded: no artificial ties
             })
     return records
 

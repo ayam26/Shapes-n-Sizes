@@ -75,13 +75,16 @@ def test_g7_cli_end_to_end(tmp_path):
         write_image(tmp_path / "foot" / "frames" / f"d1_{i:08d}ms.jpg", size=(64, 48))
     write_manifest(tmp_path / "foot" / "footage.csv",
                    [(f"d1_{i:08d}ms.jpg", "h") for i in range(3)])
-    assert main(["footage-predict", "--manifest", str(tmp_path / "foot" / "footage.csv"),
-                 "--frames", str(tmp_path / "foot" / "frames"),
-                 "--checkpoint", str(run / "final.pt"), "--device", "cpu", "--no-guard"]) == 0
-    assert (run / "eval" / "footage.detections.jsonl").exists()
     analysis = tmp_path / "analysis.json"
+    predict_args = ["footage-predict", "--manifest", str(tmp_path / "foot" / "footage.csv"),
+                    "--frames", str(tmp_path / "foot" / "frames"), "--analysis", str(analysis),
+                    "--checkpoint", str(run / "final.pt"), "--device", "cpu", "--no-guard"]
+    with pytest.raises(SystemExit, match="analysis.json"):
+        main(predict_args)  # thresholds must be fixed first
     analysis.write_text(json.dumps(
         {"footage_thresholds": {"BASE-s0": {"threshold": 0.0, "recall": 0.5, "flagged": False}}}))
+    assert main(predict_args) == 0
+    assert (run / "eval" / "footage.detections.jsonl").exists()
     assert main(["audit-sample", "--runs", str(tmp_path / "runs"), "--analysis", str(analysis),
                  "--frames", str(tmp_path / "foot" / "frames"), "--out", str(tmp_path / "page"),
                  "--key", str(tmp_path / "key.json"), "--n", "5"]) == 0
@@ -95,3 +98,25 @@ def test_g7_cli_end_to_end(tmp_path):
                  "--out", str(out)]) == 0
     r = json.loads(out.read_text())
     assert r["audit"]["BASE"]["precision"]["p"] == 0.0
+    assert r["detections"]["BASE"]["frames"] == 3
+
+
+def test_kappa_undefined_when_both_raters_use_one_label():
+    a = {"1": "correct", "2": "correct"}
+    assert cohen_kappa(a, a) is None
+
+
+def test_footage_recall_has_bootstrap_ci_and_per_class_counts():
+    from snz.audit.score import detection_counts
+    from snz.data.bdd import Box, Frame
+
+    frames = [Frame(f"f{i}.jpg", "u", "u", (Box("car", 0, 0, 10, 10),)) for i in range(20)]
+    dets = {"BASE": [{"name": f"f{i}.jpg", "boxes": [[0, 0, 10, 10]] if i % 2 else [],
+                      "labels": ["car"] if i % 2 else [], "scores": [0.9] if i % 2 else []}
+                     for i in range(20)]}
+    r = footage_recall(frames, dets, {"BASE": 0.5}, n_boot=200)
+    lo, hi = r["BASE"]["recall_ci95"]
+    assert r["BASE"]["recall"] == pytest.approx(0.5) and lo < 0.5 < hi
+    c = detection_counts(dets["BASE"], 0.5)
+    assert c["per_class"] == {"car": 10} and c["per_frame_mean"] == pytest.approx(0.5)
+    assert c["frames"] == 20

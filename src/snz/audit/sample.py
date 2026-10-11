@@ -12,9 +12,13 @@ from collections.abc import Mapping, Sequence
 
 import numpy as np
 
+from snz.data.bdd import EVAL_CLASSES
+
 
 def count_detections(records: Sequence[dict], threshold: float) -> int:
-    return sum(s >= threshold for r in records for s in r["scores"])
+    """Detections of the 9 evaluated classes (as on BDD, `train` is left out)."""
+    return sum(s >= threshold and c in EVAL_CLASSES
+               for r in records for s, c in zip(r["scores"], r["labels"], strict=True))
 
 
 def sample_audit(
@@ -27,7 +31,7 @@ def sample_audit(
     pool = []
     for arm in sorted(dets_by_arm):
         cands = [(r, j) for r in dets_by_arm[arm] for j, s in enumerate(r["scores"])
-                 if s >= thresholds[arm]]
+                 if s >= thresholds[arm] and r["labels"][j] in EVAL_CLASSES]
         pick = rng.choice(len(cands), size=min(n_per_arm, len(cands)), replace=False)
         pool += [(arm, *cands[i]) for i in sorted(pick)]
     items, key = [], {}

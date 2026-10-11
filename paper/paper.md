@@ -96,7 +96,8 @@ semantics. *Retention* = mAP(T-texture)/mAP(T-clean). *Equal-recall false detect
 BASE seed-0 recall on pooled T-shift at score ≥ 0.5 and IoU ≥ 0.5; each run is thresholded to
 reach R*, and its unmatched detections per image are counted and typed. Uncertainty: paired
 bootstrap over test images (B = 2,000), arm metric = mean over seeds, one-sided p in the
-predicted direction, Holm correction over the six confirmatory tests.
+predicted direction, Holm correction over the six confirmatory tests; R* and every
+threshold are re-estimated within each bootstrap replicate.
 
 ### 3.5 Footage audit
 
@@ -127,7 +128,6 @@ means for texture-bias explanations of detector failures at night.
 - T-fog has 5 images; dawn/dusk and overcast are descriptive only.
 - Stylized training uses DTD textures rather than Painter by Numbers.
 - The footage audit is single-region and single-camera; auditors are the authors.
-- Equal-recall thresholds are fixed from full data, not re-estimated per bootstrap replicate.
 - No claim of improved vehicle safety is made.
 
 ## 7. Ethics and data

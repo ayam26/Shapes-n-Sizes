@@ -1,4 +1,5 @@
 import subprocess
+import sys
 
 import pytest
 import torch
@@ -143,3 +144,35 @@ def test_guard_pairs_t_corrupt_splits_with_their_manifest(tmp_path):
     ensure_split_allowed("t-corrupt-fog-3", tmp_path, manifest=m / "t-corrupt.csv")
     with pytest.raises(ValueError):
         ensure_split_allowed("t-corrupt-fog-3", tmp_path, manifest=m / "t-clean.csv")
+
+
+def test_guard_checks_descriptive_and_val_all_overlap(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q",
+                    "--allow-empty", "-m", "x"], cwd=tmp_path, check=True)
+    m = tmp_path / "manifests"
+    m.mkdir()
+    (m / "id-val.csv").write_text("name,sha256\nd.jpg,h1\n")
+    (m / "t-dusk.csv").write_text("name,sha256\nd.jpg,h1\n")
+    with pytest.raises(PermissionError, match="t-dusk"):
+        ensure_split_allowed("id-val", tmp_path, manifest=m / "id-val.csv")
+
+
+def test_scores_are_not_rounded(tmp_path):
+    class Fake(torch.nn.Module):
+        def forward(self, images):
+            return [{"boxes": torch.tensor([[1.0, 2.0, 3.0, 4.0]]),
+                     "labels": torch.tensor([3]), "scores": torch.tensor([0.123456789])}
+                    for _ in images]
+
+    write_image(tmp_path / "img" / "a.jpg")
+    r = predict(Fake(), [_frame("a.jpg")], tmp_path / "img", device="cpu", num_workers=0)
+    assert r[0]["scores"][0] == pytest.approx(0.123456789, abs=1e-8)
+
+
+def test_corrupt_name_is_light():
+    code = ("import sys; from snz.filenames import corrupt_name; "
+            "print('imagecorruptions' in sys.modules, corrupt_name('a.jpg', 'fog', 3))")
+    out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
+                         check=True).stdout.split()
+    assert out == ["False", "a__fog_3.jpg"]

@@ -6,7 +6,7 @@ import csv
 import subprocess
 from pathlib import Path
 
-from snz.data.bdd import TEST_SPLITS, TRAIN_SPLITS
+from snz.data.bdd import DESCRIPTIVE_SPLITS, TEST_SPLITS, TRAIN_SPLITS
 
 PREREG_TAG = "prereg-v1"
 MANIFEST_FOR = {"t-texture": "t-clean"}  # T-texture = stylized copies of the T-clean images
@@ -39,7 +39,7 @@ def ensure_split_allowed(
             f"is committed and tagged {PREREG_TAG!r} (gate G4)")
     if manifest is not None:
         names = _names(manifest)
-        for test in TEST_SPLITS:
+        for test in (*TEST_SPLITS, *DESCRIPTIVE_SPLITS, "val-all", "t-corrupt"):
             other = Path(manifest).parent / f"{test}.csv"
             if other.exists() and names & _names(other):
                 raise PermissionError(

@@ -7,6 +7,7 @@ The page never contains arm names or scores.
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Sequence
 from pathlib import Path
@@ -50,7 +51,7 @@ const ITEMS = __ITEMS__;
 const LABELS = __LABELS__;
 const TEXT = {correct: "real object, correct class", wrong_class: "real object, wrong class",
               invented: "nothing there (invented)", unsure: "unsure"};
-const KEY = "snz-audit-" + ITEMS.length + "-" + (ITEMS[0] ? ITEMS[0].id : "");
+const KEY = "snz-audit-__DIGEST__";
 let answers = {};
 try { answers = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
 let focus = 0;
@@ -113,7 +114,8 @@ def build_audit_page(items: Sequence[dict], frames_dir: Path, out_dir: Path) -> 
             img = img.resize((MAX_WIDTH, round(img.height * MAX_WIDTH / img.width)))
         img.save(out_dir / "items" / f"{it['id']}.jpg", quality=90)
     public = [{"id": it["id"], "class": it["class"]} for it in items]
-    html = _HTML.replace("__ITEMS__", json.dumps(public)).replace("__LABELS__",
-                                                                  json.dumps(list(LABELS)))
+    digest = hashlib.sha256(json.dumps(list(items), sort_keys=True).encode()).hexdigest()[:16]
+    html = (_HTML.replace("__ITEMS__", json.dumps(public))
+            .replace("__LABELS__", json.dumps(list(LABELS))).replace("__DIGEST__", digest))
     (out_dir / "index.html").write_text(html)
     return out_dir / "index.html"

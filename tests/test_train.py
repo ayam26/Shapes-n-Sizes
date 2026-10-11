@@ -177,3 +177,11 @@ def test_evaluate_reads_corrupted_copies(tmp_path):
                  "--checkpoint", str(tmp_path / "run" / "final.pt"), "--out", str(tmp_path / "ev"),
                  "--device", "cpu", "--no-guard"]) == 0
     assert (tmp_path / "ev" / "t-corrupt-fog-3.detections.jsonl").exists()
+
+
+def test_train_cli_only_accepts_the_train_manifest(tmp_path):
+    from snz.cli import main
+
+    with pytest.raises(SystemExit, match="train.csv"):
+        main(["train", "--pilot", "--arm", "BASE", "--seed", "0", "--labels", "x",
+              "--manifest", "manifests/t-clean.csv", "--images", "x", "--out", str(tmp_path)])

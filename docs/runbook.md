@@ -65,8 +65,17 @@ A run that stops partway (power, SSH drop) resumes when the same command is run 
 
 ## G4 — preregistration
 
-After G3: fill in `prereg/prereg.md` (frozen recipe hash, split counts), commit, then
-`git tag prereg-v1 && git push origin prereg-v1`. Only now do test splits open.
+After G3:
+
+1. Rebuild the manifests with the current code (adds `t-dusk`, `t-overcast`, `val-all`) and
+   check that the existing ones did not change:
+   ```bash
+   uv run snz build-splits --train-labels ... --val-labels ... --train-images ... --val-images ...
+   git diff --exit-code manifests/train.csv manifests/id-val.csv manifests/t-clean.csv \
+     manifests/t-night.csv manifests/t-rain.csv manifests/t-snow.csv manifests/t-fog.csv
+   ```
+2. Fill in `prereg/prereg.md` (frozen recipe hash, split counts), commit, then
+   `git tag prereg-v1 && git push origin prereg-v1`. Only now do test splits open.
 
 ## G5 — the 12 runs
 
@@ -102,6 +111,9 @@ Footage stays private (never in git). Record video only, no audio.
 4. Build the blind audit (600 items) and label it in a browser; keep the key closed:
    `uv run snz audit-sample --runs ~/snz-data/runs --frames ~/snz-data/footage/frames --out ~/snz-data/audit --key ~/snz-data/audit_key.json`
    Open `~/snz-data/audit/index.html`, label every item, click "Download CSV".
-5. Label 100 random frames fully (CVAT or Label Studio, no model pre-annotation), export COCO.
+5. Draw the 100 frames to label (never pick them by hand):
+   `uv run snz footage-label-sample --manifest ~/snz-data/footage/footage.csv --out label_frames.txt`
+   Label every object of the 9 classes on those frames (CVAT or Label Studio, no model
+   pre-annotation) and export COCO.
 6. Unblind and score:
    `uv run snz audit-score --labels audit_labels.csv --key ~/snz-data/audit_key.json --runs ~/snz-data/runs --coco hand_labels.json`
