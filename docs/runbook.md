@@ -127,3 +127,18 @@ uv run snz footage-drives-comma2k19 --root ~/snz-data/footage-src/Chunk_1 \
    pre-annotation) and export COCO.
 6. Unblind and score:
    `uv run snz audit-score --labels audit_labels.csv --key ~/snz-data/audit_key.json --runs ~/snz-data/runs --coco hand_labels.json`
+
+## GNN shape verifier (Plan 4, `prereg-v2`)
+
+One-time on the GX10: `SAM2_BUILD_CUDA=0 uv pip install sam2 huggingface_hub` (sam2 is not in
+`uv.lock`; it is sdist-only and needs torch to build).
+
+```bash
+scripts/run_gnn.sh outlines   # SAM 2 outlines of BASE-s0 detections (id-val, t-texture, val-all; 4 shards)
+scripts/run_gnn.sh train      # GNN, RGB, GNN-SHAPE, GNN-COLOR on id-val fold A; fusion on fold B
+# fill prereg/prereg-v2.md from ~/snz-data/gnn/models/gnn-train.json, commit, tag prereg-v2
+scripts/run_gnn.sh rescore    # val-all and t-texture, every arm (blocked until prereg-v2)
+scripts/run_gnn.sh analyze    # results/gnn/analysis.json + report.md
+```
+
+Fallback segmenter: `SNZ_SEGMENTER=grabcut scripts/run_gnn.sh outlines`.

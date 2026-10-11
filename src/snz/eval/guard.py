@@ -18,7 +18,7 @@ def _names(manifest: Path) -> set[str]:
 
 
 def ensure_split_allowed(
-    split: str, repo: Path = Path("."), manifest: Path | None = None
+    split: str, repo: Path = Path("."), manifest: Path | None = None, tag: str = PREREG_TAG
 ) -> None:
     """Refuse held-out data before the prereg tag.
 
@@ -30,16 +30,16 @@ def ensure_split_allowed(
     if manifest is not None and Path(manifest).stem != expected:
         raise ValueError(f"manifest {manifest} does not match --split {split!r}")
     try:
-        tags = subprocess.run(["git", "tag", "--list", PREREG_TAG], cwd=repo,
+        tags = subprocess.run(["git", "tag", "--list", tag], cwd=repo,
                               capture_output=True, text=True, check=True).stdout.split()
     except (OSError, subprocess.CalledProcessError):
         tags = []  # no readable repository: the tag counts as absent (fail closed)
-    if PREREG_TAG in tags:
+    if tag in tags:
         return
     if split not in TRAIN_SPLITS:
         raise PermissionError(
             f"split {split!r} is held out: evaluation is blocked until the preregistration "
-            f"is committed and tagged {PREREG_TAG!r} (gate G4)")
+            f"is committed and tagged {tag!r}")
     if manifest is not None:
         names = _names(manifest)
         for test in (*TEST_SPLITS, *DESCRIPTIVE_SPLITS, "val-all", "t-corrupt"):
@@ -47,4 +47,4 @@ def ensure_split_allowed(
             if other.exists() and names & _names(other):
                 raise PermissionError(
                     f"{manifest} contains images of test split {test!r}; blocked until "
-                    f"{PREREG_TAG!r} (gate G4)")
+                    f"{tag!r}")

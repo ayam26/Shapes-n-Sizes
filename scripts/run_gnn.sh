@@ -14,15 +14,45 @@ SEG="${SNZ_SEGMENTER:-sam2}"
 mkdir -p "$G/outlines" "$G/models" "$G/runs"
 case "${1:-}" in
   outlines)
-    [ -f "$G/outlines/id-val.npz" ] || uv run snz gnn-outlines --segmenter "$SEG" \
-      --detections "$B/id-val.detections.jsonl" --images "$D/bdd100k/images/100k/train" \
-      --out "$G/outlines/id-val.npz"
-    [ -f "$G/outlines/val-all.npz" ] || uv run snz gnn-outlines --segmenter "$SEG" \
-      --detections "$B/val-all.detections.jsonl" --images "$D/bdd100k/images/100k/val" \
-      --out "$G/outlines/val-all.npz"
-    [ -f "$G/outlines/t-texture.npz" ] || uv run snz gnn-outlines --segmenter "$SEG" \
-      --detections "$B/t-texture.detections.jsonl" --images "$D/stylized/t-texture" \
-      --stylized-copy 1 --out "$G/outlines/t-texture.npz"
+    # each split in $SHARDS parallel SAM 2 processes, then merged (GPU has headroom)
+    SHARDS="${SNZ_SHARDS:-4}"
+    outline_split() {  # split detections images [extra args]
+      local split=$1 det=$2 img=$3; shift 3
+      [ -f "$G/outlines/$split.npz" ] && return
+      local parts=()
+      for k in $(seq 0 $((SHARDS - 1))); do
+        parts+=("$G/outlines/$split.part$k.npz")
+        [ -f "$G/outlines/$split.part$k.npz" ] || uv run snz gnn-outlines --segmenter "$SEG" \
+          --detections "$det" --images "$img" --shard "$k/$SHARDS" \
+          --out "$G/outlines/$split.part$k.npz" "$@" &
+      done
+      wait
+      uv run snz gnn-merge-outlines --parts "${parts[@]}" --detections "$det" \
+        --out "$G/outlines/$split.npz"
+    }
+    outline_split id-val "$B/id-val.detections.jsonl" "$D/bdd100k/images/100k/train"
+    outline_split t-texture "$B/t-texture.detections.jsonl" "$D/stylized/t-texture" \
+      --stylized-copy 1
+    outline_split val-all "$B/val-all.detections.jsonl" "$D/bdd100k/images/100k/val"
+    ;;
+  train)
+    # priority order (spec §3): GNN (G1, G2) -> RGB (G3) -> GNN-SHAPE -> GNN-COLOR
+    [ -f "$G/models/gnn-train.json" ] && grep -q '"GNN-COLOR.pt"' "$G/models/gnn-train.json" ||
+      uv run snz gnn-train --outlines "$G/outlines/id-val.npz" --labels "$L/det_train.json" \
+        --manifest manifests/id-val.csv --images "$D/bdd100k/images/100k/train" \
+        --out "$G/models" --arms "${SNZ_GNN_ARMS:-GNN,RGB,GNN-SHAPE,GNN-COLOR}" --fold-dir manifests
+    ;;
+  rescore)
+    ARMS="${SNZ_GNN_RESCORE_ARMS:-BASE,GNN,RGB,GNN-SHAPE,GNN-COLOR}"
+    uv run snz gnn-rescore --split val-all --outlines "$G/outlines/val-all.npz" \
+      --models "$G/models" --images "$D/bdd100k/images/100k/val" --out-root "$G/runs" --arms "$ARMS"
+    uv run snz gnn-rescore --split t-texture --outlines "$G/outlines/t-texture.npz" \
+      --models "$G/models" --images "$D/stylized/t-texture" --stylized-copy 1 \
+      --out-root "$G/runs" --arms "$ARMS"
+    ;;
+  analyze)
+    uv run snz gnn-analyze --runs "$G/runs" --labels "$L/det_val.json" --manifests manifests \
+      --out results/gnn
     ;;
   *)
     echo "usage: $0 outlines|train|rescore|analyze" >&2; exit 2 ;;

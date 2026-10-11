@@ -1,0 +1,73 @@
+{
+  "counts": {
+    "fold_a": {
+      "excluded": 5833,
+      "pedestrian": 528,
+      "rider": 60,
+      "car": 6542,
+      "truck": 666,
+      "bus": 314,
+      "motorcycle": 102,
+      "bicycle": 67,
+      "traffic light": 1073,
+      "traffic sign": 1653,
+      "background": 12916
+    },
+    "fold_b": {
+      "excluded": 5947,
+      "pedestrian": 753,
+      "rider": 53,
+      "car": 6442,
+      "truck": 648,
+      "bus": 316,
+      "motorcycle": 56,
+      "bicycle": 51,
+      "traffic light": 1154,
+      "traffic sign": 1676,
+      "background": 12737
+    },
+    "fold_b_tp": 8563,
+    "fold_b_rows": 29833
+  },
+  "fold_b_auroc": {
+    "BASE": 0.9079742000178879,
+    "GNN": 0.9099874208698262,
+    "RGB": 0.917585981959207,
+    "GNN-SHAPE": 0.9100750866074567,
+    "GNN-COLOR": 0.9102343805290373
+  },
+  "sha256": {
+    "GNN.pt": "7ef04f4b2274dd3fefd0ca7bcce10983553e91fafb3d009d5255a94cf96ff89a",
+    "RGB.pt": "314afa5aa0c078445232f6ec711d85235d23382d2ee454cf8483604a200d1215",
+    "GNN-SHAPE.pt": "2b525fcf06ea94f14dee66912a9c107d8dedc8ff56d59d2b98e84dafc898dd22",
+    "GNN-COLOR.pt": "bd4bfb38bb5dfcddf3fa831cb1708afbe2b5022f46173b331f0e4755d1b07d78"
+  },
+  "config": {
+    "gnn": {
+      "epochs": 30,
+      "lr": 0.001,
+      "batch_size": 512,
+      "weight_decay": 0.0001
+    },
+    "rgb": {
+      "epochs": 8,
+      "lr": 0.0003,
+      "batch_size": 256,
+      "weight_decay": 0.0001
+    },
+    "fusion_features": [
+      "logit_det_score",
+      "log_p_det_class",
+      "log_p_background",
+      "log_max_p_other_class"
+    ],
+    "arms": [
+      "GNN",
+      "RGB",
+      "GNN-SHAPE",
+      "GNN-COLOR"
+    ],
+    "outlines": "/home/asus/snz-data/gnn/outlines/id-val.npz",
+    "outlines_sha256": "176d5bab9acb79d49bdbe53bc94ef7c19536e9a57fcaed746aabda90f9fdcf3c"
+  }
+}

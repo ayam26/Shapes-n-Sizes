@@ -143,7 +143,56 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--segmenter", choices=["sam2", "grabcut"], default="sam2")
     p.add_argument("--device", default="cuda")
     p.add_argument("--sam2-checkpoint", type=Path)
+    p.add_argument("--shard", help="K/N: only every N-th image starting at K (parallel runs)")
     p.set_defaults(func=_cmd_gnn_outlines)
+
+    p = commands.add_parser("gnn-merge-outlines", help="merge gnn-outlines shards")
+    p.add_argument("--parts", type=Path, nargs="+", required=True)
+    p.add_argument("--detections", type=Path, required=True, help="defines the image order")
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(func=_cmd_gnn_merge_outlines)
+
+    p = commands.add_parser("gnn-train", help="GNN stage: train networks (fold A), fusion (B)")
+    p.add_argument("--outlines", type=Path, required=True, help="id-val.npz")
+    p.add_argument("--labels", type=Path, required=True, help="det_train.json")
+    p.add_argument("--manifest", type=Path, default=Path("manifests/id-val.csv"))
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--arms", default="GNN,RGB,GNN-SHAPE,GNN-COLOR")
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--fold-dir", type=Path, default=Path("manifests"))
+    p.add_argument("--no-pretrained", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_train)
+
+    p = commands.add_parser("gnn-rescore", help="GNN stage: re-score BASE-s0 detections per arm")
+    p.add_argument("--split", required=True,
+                   choices=["id-val", "val-all", "t-texture", "footage"])
+    p.add_argument("--outlines", type=Path, required=True)
+    p.add_argument("--models", type=Path, required=True)
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--out-root", type=Path, required=True)
+    p.add_argument("--arms", default="BASE,GNN,RGB,GNN-SHAPE,GNN-COLOR")
+    p.add_argument("--stylized-copy", type=int)
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_rescore)
+
+    p = commands.add_parser("gnn-analyze", help="GNN stage: G1-G3 and descriptive report")
+    p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s0/eval/")
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--out", type=Path, default=Path("results/gnn"))
+    p.add_argument("--bootstrap", type=int, default=2000)
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_analyze)
+
+    p = commands.add_parser("gnn-footage-thresholds",
+                            help="footage thresholds per GNN arm (full-val equal recall)")
+    p.add_argument("--runs", type=Path, required=True)
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(func=_cmd_gnn_footage_thresholds)
 
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
@@ -307,7 +356,7 @@ def _seed0_footage(runs: Path, analysis: Path) -> tuple[dict, dict]:
 
     thresholds = json.loads(analysis.read_text())["footage_thresholds"]
     dets, th = {}, {}
-    for arm in ("BASE", "STY", "SIN", "BOTH"):
+    for arm in (k.removesuffix("-s0") for k in thresholds if k.endswith("-s0")):
         f = runs / f"{arm}-s0" / "eval" / "footage.detections.jsonl"
         if f.exists():
             dets[arm] = read_detections(f)
@@ -422,12 +471,102 @@ def _cmd_gnn_outlines(args) -> int:
         if done % 250 == 0 or done == total:
             print(f"outlines {done}/{total}", file=sys.stderr, flush=True)
 
-    o = extract_outlines(read_detections(args.detections), args.images, segmenter, file_name,
-                         progress)
+    records = read_detections(args.detections)
+    if args.shard:
+        from snz.gnn.outlines import shard_records
+
+        k, n = map(int, args.shard.split("/"))
+        records = shard_records(records, k, n)
+    o = extract_outlines(records, args.images, segmenter, file_name, progress)
     save_outlines(args.out, o)
     print(json.dumps({"images": len(o.names), "outlines": len(o.score),
                       "ok_rate": float(o.ok.mean()) if len(o.ok) else None,
                       "segmenter": args.segmenter}))
+    return 0
+
+
+def _cmd_gnn_merge_outlines(args) -> int:
+    from snz.eval.predict import read_detections
+    from snz.gnn.outlines import load_outlines, merge_outlines, save_outlines
+
+    names = [r["name"] for r in read_detections(args.detections)]
+    o = merge_outlines([load_outlines(p) for p in args.parts], names)
+    save_outlines(args.out, o)
+    print(json.dumps({"images": len(o.names), "outlines": len(o.score),
+                      "ok_rate": float(o.ok.mean()) if len(o.ok) else None}))
+    return 0
+
+
+def _cmd_gnn_train(args) -> int:
+    from snz.gnn.train import train_arms
+
+    summary = train_arms(args.outlines, args.labels, args.manifest, args.images, args.out,
+                         [a for a in args.arms.split(",") if a], args.device, args.fold_dir,
+                         pretrained=not args.no_pretrained)
+    print(json.dumps({k: summary[k] for k in ("counts", "fold_b_auroc")}, indent=2))
+    return 0
+
+
+def _cmd_gnn_rescore(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.eval.predict import write_detections
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.outlines import load_outlines
+    from snz.gnn.rescore import rescore
+    from snz.hashing import sha256_file
+
+    if not args.no_guard:
+        ensure_split_allowed(args.split, tag=GNN_PREREG_TAG)
+    file_name = None
+    if args.stylized_copy is not None:
+        from snz.stylize.build import stylized_name
+
+        file_name = functools.partial(stylized_name, copy=args.stylized_copy)
+    o = load_outlines(args.outlines)
+    for arm in [a for a in args.arms.split(",") if a]:
+        if arm != "BASE" and not (args.models / f"{arm}.pt").exists():
+            print(f"{arm}: no model, skipped")
+            continue
+        recs = rescore(o, arm, args.models, image_dir=args.images, file_name=file_name,
+                       device=args.device)
+        run = args.out_root / f"{arm}-s0"
+        write_detections(run / "eval" / f"{args.split}.detections.jsonl", recs)
+        prov_path = run / "provenance.json"
+        prov = json.loads(prov_path.read_text()) if prov_path.exists() else {}
+        prov[args.split] = {
+            "outlines": str(args.outlines), "outlines_sha256": sha256_file(args.outlines),
+            "model_sha256": (sha256_file(args.models / f"{arm}.pt") if arm != "BASE" else None),
+            "ok_rate": float(o.ok.mean()) if len(o.ok) else None}
+        prov_path.write_text(json.dumps(prov, indent=2))
+        print(f"{arm}: {sum(len(r['scores']) for r in recs)} detections on {len(recs)} images")
+    return 0
+
+
+def _cmd_gnn_analyze(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.analyze import gnn_analyze, render_gnn_report
+
+    if not args.no_guard:
+        ensure_split_allowed("val-all", tag=GNN_PREREG_TAG)
+    result = gnn_analyze(args.runs, args.labels, args.manifests, n_boot=args.bootstrap)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
+    (args.out / "report.md").write_text(render_gnn_report(result))
+    print((args.out / "report.md").read_text())
+    return 0
+
+
+def _cmd_gnn_footage_thresholds(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.analyze import footage_thresholds
+
+    ensure_split_allowed("val-all", tag=GNN_PREREG_TAG)
+    result = footage_thresholds(args.runs, args.labels, args.manifests)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2))
     return 0
 
 

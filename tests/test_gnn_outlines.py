@@ -52,3 +52,20 @@ def test_save_is_atomic(tmp_path, monkeypatch):
     with pytest.raises(OSError):
         save_outlines(tmp_path / "o.npz", o)
     assert not (tmp_path / "o.npz").exists()
+
+
+def test_shards_merge_back_to_the_whole(tmp_path):
+    from snz.gnn.outlines import merge_outlines, shard_records
+
+    recs = []
+    for i in range(7):
+        write_image(tmp_path / f"{i}.jpg", size=(64, 48), color=(20 * i, 10, 10))
+        recs.append({"name": f"{i}.jpg", "boxes": [[5, 5, 30, 30]] * (i % 3),
+                     "labels": ["car"] * (i % 3), "scores": [0.9] * (i % 3)})
+    whole = extract_outlines(recs, tmp_path, FakeSegmenter())
+    parts = [extract_outlines(shard_records(recs, k, 3), tmp_path, FakeSegmenter())
+             for k in range(3)]
+    merged = merge_outlines(parts, [r["name"] for r in recs])
+    assert merged.names == whole.names and merged.label == whole.label
+    assert np.array_equal(merged.image, whole.image) and np.array_equal(merged.box, whole.box)
+    assert np.array_equal(merged.contour, whole.contour)

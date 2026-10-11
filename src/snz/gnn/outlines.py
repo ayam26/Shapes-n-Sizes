@@ -49,17 +49,26 @@ class Sam2Segmenter:
                 build_sam2("configs/sam2.1/sam2.1_hiera_s.yaml", str(checkpoint), device=device))
 
     def __call__(self, image: np.ndarray, boxes: np.ndarray) -> np.ndarray:
-        torch = self.torch
+        """Masks are thresholded on the GPU and only each box's region (+10%) is copied back:
+        copying N full-resolution float masks dominated the run time."""
+        torch, p = self.torch, self.predictor
+        h, w = image.shape[:2]
+        out = np.zeros((len(boxes), h, w), bool)
         with torch.inference_mode(), torch.autocast(self.device.split(":")[0],
                                                     dtype=torch.bfloat16,
                                                     enabled=self.device.startswith("cuda")):
-            self.predictor.set_image(image)
-            masks, _, _ = self.predictor.predict(box=np.asarray(boxes, np.float32),
-                                                 multimask_output=False)
-        masks = np.asarray(masks)
-        if masks.ndim == 4:
-            masks = masks[:, 0]
-        return masks.reshape(len(boxes), *image.shape[:2]) > 0
+            p.set_image(image)
+            mask_input, coords, labels, ubox = p._prep_prompts(
+                None, None, np.asarray(boxes, np.float32), None, True)
+            masks, _, _ = p._predict(coords, labels, ubox, mask_input, multimask_output=False)
+            masks = masks[:, 0] if masks.ndim == 4 else masks
+            for k, (x1, y1, x2, y2) in enumerate(np.asarray(boxes, float)):
+                mx, my = 0.1 * (x2 - x1) + 2, 0.1 * (y2 - y1) + 2
+                ya, yb = max(int(y1 - my), 0), min(int(np.ceil(y2 + my)), h)
+                xa, xb = max(int(x1 - mx), 0), min(int(np.ceil(x2 + mx)), w)
+                if yb > ya and xb > xa:
+                    out[k, ya:yb, xa:xb] = (masks[k, ya:yb, xa:xb] > 0).cpu().numpy()
+        return out
 
 
 class GrabCutSegmenter:
@@ -184,3 +193,33 @@ def load_outlines(path: Path) -> OutlineSet:
                       det_index=z["det_index"], box=z["box"], score=z["score"],
                       label=[str(x) for x in z["label"]], contour=z["contour"], color=z["color"],
                       ok=z["ok"], image_wh=z["image_wh"])
+
+
+def shard_records(records: Sequence[dict], k: int, n: int) -> list[dict]:
+    """Every n-th record starting at k (shards run as parallel processes)."""
+    return list(records[k::n])
+
+
+def merge_outlines(parts: Sequence[OutlineSet], names: Sequence[str]) -> OutlineSet:
+    """Recombine shards into one OutlineSet in the original image order."""
+    order = {n: i for i, n in enumerate(names)}
+    rows = []
+    for part in parts:
+        for r in range(len(part.score)):
+            rows.append((order[part.names[part.image[r]]], int(part.det_index[r]), part, r))
+    rows.sort(key=lambda t: (t[0], -float(t[2].score[t[3]]), t[1]))
+    m = len(rows)
+
+    def take(attr, dtype, shape):
+        if not m:
+            return np.zeros((0, *shape), dtype)
+        return np.stack([getattr(p, attr)[r] for _, _, p, r in rows]).astype(dtype)
+
+    return OutlineSet(
+        names=list(names), image=np.asarray([i for i, *_ in rows], np.int32),
+        det_index=np.asarray([d for _, d, _, _ in rows], np.int32),
+        box=take("box", np.float32, (4,)), score=take("score", np.float32, ()),
+        label=[p.label[r] for *_, p, r in rows],
+        contour=take("contour", np.float32, (N_POINTS, 2)),
+        color=take("color", np.uint8, (N_POINTS, 3)), ok=take("ok", bool, ()),
+        image_wh=take("image_wh", np.int32, (2,)))
