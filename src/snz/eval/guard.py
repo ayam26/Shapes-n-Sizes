@@ -29,8 +29,11 @@ def ensure_split_allowed(
     expected = "t-corrupt" if split.startswith("t-corrupt-") else MANIFEST_FOR.get(split, split)
     if manifest is not None and Path(manifest).stem != expected:
         raise ValueError(f"manifest {manifest} does not match --split {split!r}")
-    tags = subprocess.run(["git", "tag", "--list", PREREG_TAG], cwd=repo, capture_output=True,
-                          text=True, check=True).stdout.split()
+    try:
+        tags = subprocess.run(["git", "tag", "--list", PREREG_TAG], cwd=repo,
+                              capture_output=True, text=True, check=True).stdout.split()
+    except (OSError, subprocess.CalledProcessError):
+        tags = []  # no readable repository: the tag counts as absent (fail closed)
     if PREREG_TAG in tags:
         return
     if split not in TRAIN_SPLITS:

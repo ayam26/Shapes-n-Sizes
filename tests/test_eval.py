@@ -176,3 +176,9 @@ def test_corrupt_name_is_light():
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True,
                          check=True).stdout.split()
     assert out == ["False", "a__fog_3.jpg"]
+
+
+def test_guard_outside_a_git_repo_stays_closed_without_crashing(tmp_path):
+    ensure_split_allowed("id-val", tmp_path)  # no .git: training splits still usable
+    with pytest.raises(PermissionError):
+        ensure_split_allowed("t-clean", tmp_path)
