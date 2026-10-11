@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "frozen": false,
+  "frozen_at": null,
+  "note": "Baseline text is the design-doc instruction plus one neutral sentence identifying the visual marker (required so the model knows which object is the target). The structure variant appends exactly one fixed sentence. Both receive the byte-identical RGB image.",
+  "methods": {
+    "rgb_baseline": {
+      "description": "RGB image + baseline instruction",
+      "input": "rgb",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle, flat_depiction, other, uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations."
+    },
+    "rgb_structure_prompt": {
+      "description": "Same RGB image + baseline instruction + one structure-focused sentence (prompt intervention, not a new model)",
+      "input": "rgb",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle, flat_depiction, other, uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. Before answering, consider the target's visible thickness, its perspective relative to the road and surroundings, what physically supports it, and its occlusion relationships with nearby objects."
+    }
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "label": {"type": "string", "enum": ["physical_vehicle", "flat_depiction", "other", "uncertain"]},
+      "visible_evidence": {"type": "string"}
+    },
+    "required": ["label", "visible_evidence"]
+  }
+}

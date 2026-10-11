@@ -3,16 +3,19 @@
   "started_at": "2026-10-11T05:17:24Z",
   "deadline_at": "2026-10-11T15:17:24Z",
   "status": "running",
-  "phase": "scaffold",
+  "phase": "development_runs",
   "hardware_verified": true,
   "provider_mode": "ollama-local-verified",
   "model_config_hash": null,
-  "manifest_hash": null,
+  "manifest_hash": "5eeeb8ad1aa3585ed163de0f8827a7d182aed65e60bf54e5ac790117826ec631",
   "prompts_frozen_at": null,
   "completed_milestones": [
-    "bootstrap: environment inspected, nemotron3:33b image smoke test passed (warm 0.5s)"
+    "bootstrap: environment inspected, nemotron3:33b image smoke test passed (warm 0.5s)",
+    "backend: FastAPI+SQLite+single GPU worker on GX10, 30 tests passing",
+    "scene+corpus: procedural Three.js scene, 60 cases (36 core + 24 discovery) rendered deterministically and uploaded",
+    "e2e: run-20261011T054252-99b6 \u2014 4/4 live nemotron3:33b results, ~1.2-1.4s warm"
   ],
   "active_jobs": [],
   "blockers": [],
-  "next_action": "Scaffold backend (FastAPI on GX10) + frontend (Vite/React/Three on Mac); end-to-end capture->inference"
+  "next_action": "Build full comparison UI; run development split (18 cases x 2 methods); then freeze prompts/config"
 }
