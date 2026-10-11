@@ -84,7 +84,7 @@ def _runs(tmp_path, frames, skip=()):
 def test_analyze_detects_planted_effect_and_reports_everything(tmp_path):
     frames, labels, manifests = _val(tmp_path)
     _runs(tmp_path, frames)
-    r = analyze(tmp_path / "runs", labels, manifests, n_boot=200, seed=0)
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=200, seed=0, seeds=(0, 1))
     json.dumps(r)  # serializable
     c = r["confirmatory"]
     assert set(c) == {"H1b-STY", "H1b-SIN", "H2", "H3", "H4-STY", "H4-SIN"}
@@ -104,9 +104,11 @@ def test_analyze_detects_planted_effect_and_reports_everything(tmp_path):
 def test_missing_runs_are_reported_not_fatal(tmp_path):
     frames, labels, manifests = _val(tmp_path)
     _runs(tmp_path, frames, skip={("SIN", 0), ("SIN", 1), ("BOTH", 1)})
-    r = analyze(tmp_path / "runs", labels, manifests, n_boot=50, seed=0)
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=50, seed=0, seeds=(0, 1))
     assert r["missing_runs"] == ["BOTH-s1", "SIN-s0", "SIN-s1"]
     assert r["confirmatory"]["H3"]["status"] == "missing arm"
+    assert r["holm_family_size"] == 6  # missing tests enter Holm with p = 1
+    assert r["confirmatory"]["H2"]["p_holm"] >= 3 * r["confirmatory"]["H2"]["p"] - 1e-12
     assert r["arms"]["BOTH"]["subsets"]["t-clean"]["mAP"]["n"] == 1
 
 
@@ -125,7 +127,8 @@ def test_report_and_cli(tmp_path):
     _runs(tmp_path, frames)
     r = analyze(tmp_path / "runs", labels, manifests, n_boot=30, seed=0)
     md = render_report(r)
-    for text in ("H2", "H4-SIN", "Holm", "t-fog", "t-overcast", "Retention", "invented", "R*"):
+    for text in ("H2", "H4-SIN", "Holm", "t-fog", "t-overcast", "Retention", "invented", "R*",
+                 "H1a", "arm − BASE mAP by subset", "re-estimated per replicate"):
         assert text in md
     out = tmp_path / "results"
     assert main(["analyze", "--runs", str(tmp_path / "runs"), "--labels", str(labels),
@@ -153,3 +156,27 @@ def test_corrupt_section_relative_performance(tmp_path):
     assert tc["STY-s0"]["rPC"] > tc["BASE-s0"]["rPC"]
     from snz.eval.report import render_report
     assert "T-corrupt" in render_report(r)
+
+
+def test_cis_for_h1a_and_every_subset_and_provenance(tmp_path):
+    frames, labels, manifests = _val(tmp_path)
+    _runs(tmp_path, frames)
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=40, seed=0)
+    assert r["missing_runs"] == [f"{a}-s2" for a in ("BASE", "BOTH", "SIN", "STY")]
+    h1a = r["descriptive"]["H1a_BASE_retention"]
+    assert h1a["ci95"][0] <= h1a["estimate"] <= h1a["ci95"][1]
+    sub = r["exploratory"]["subset_mAP_vs_BASE"]
+    assert set(sub) == {"t-clean", "t-night", "t-rain", "t-snow", "t-fog", "t-dusk",
+                        "t-overcast", "t-shift"}
+    assert set(sub["t-night"]) == {"STY", "SIN", "BOTH"} and len(sub["t-night"]["STY"]["ci95"]) == 2
+    assert r["thresholds_in_bootstrap"] == "re-estimated per replicate"
+    assert set(r["provenance"]) >= {"git_commit", "prereg_tag"}
+
+
+def test_pycocotools_cross_check(tmp_path):
+    frames, labels, manifests = _val(tmp_path)
+    _runs(tmp_path, frames)
+    ev = tmp_path / "runs" / "BASE-s0" / "eval"
+    (ev / "val-all.metrics.json").write_text(json.dumps({"mAP": 0.123}))
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=5, seed=0, seeds=(0, 1))
+    assert r["coco_check"]["BASE-s0"]["val-all"]["agrees"] is False

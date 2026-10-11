@@ -130,6 +130,7 @@ def match_split(
         d_score = np.asarray(d["scores"], float)
         real_iou_all = box_iou(d_box, gt_box[~gt_ign])  # vs every real box, any class
         real_cat = gt_cat[~gt_ign]
+        any_iou = box_iou(d_box, gt_box)  # incl. ignore regions: "every ground truth" (§7.3)
         for c, k in cls_index.items():
             sel = np.flatnonzero(d_lab == c)
             if not sel.size:
@@ -140,13 +141,15 @@ def match_split(
             tp, ign = _greedy(iou, gt_ign[gmask])
             same = real_iou_all[sel][:, real_cat == c]
             other = real_iou_all[sel][:, real_cat != c]
-            best_same = same.max(axis=1, initial=0.0)
+            best_same = np.maximum(same.max(axis=1, initial=0.0),
+                                   any_iou[sel][:, gt_cat == c].max(axis=1, initial=0.0))
             best_other = other.max(axis=1, initial=0.0)
+            best_any = any_iou[sel].max(axis=1, initial=0.0)
             fd = np.full(len(sel), FD_NEAR_OTHER, np.int8)
-            fd[np.maximum(best_same, best_other) < 0.1] = FD_INVENTED
+            fd[best_any < 0.1] = FD_INVENTED
             fd[(best_same >= 0.1) & (best_same < 0.5) & (best_other < 0.5)] = FD_POOR_LOC
             fd[best_other >= 0.5] = FD_WRONG_CLASS
-            fd[best_same >= 0.5] = FD_DUPLICATE  # same-class box already taken
+            fd[same.max(axis=1, initial=0.0) >= 0.5] = FD_DUPLICATE  # real box already taken
             fd[ign[:, 0]] = FD_IGNORED
             fd[tp[:, 0]] = FD_TP
             out["image"].append(np.full(len(sel), i))

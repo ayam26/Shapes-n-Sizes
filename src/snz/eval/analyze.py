@@ -8,8 +8,10 @@ it with image weights shared by every run in a replicate.
 
 from __future__ import annotations
 
+import json
 import math
 import re
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -18,8 +20,9 @@ from snz.data.bdd import load_frames, select_frames
 from snz.data.manifest import read_manifest
 from snz.eval.ap import APCalculator
 from snz.eval.bootstrap import bootstrap_weights, holm, one_sided_p, percentile_ci
+from snz.eval.guard import PREREG_TAG
 from snz.eval.matching import match_split
-from snz.eval.operating import false_detections, recall_at, threshold_for_recall
+from snz.eval.operating import RecallCurve, false_detections, recall_at, threshold_for_recall
 from snz.eval.predict import read_detections
 
 ARMS = ("BASE", "STY", "SIN", "BOTH")
@@ -36,6 +39,7 @@ CONFIRMATORY = {
     "H4-SIN": ("SIN", "shift_fd", "less"),
 }
 ALPHA = 0.05
+COCO_TOLERANCE = 0.001  # 0.1 mAP points (spec §7.1)
 RUN_DIR = re.compile(r"^(BASE|STY|SIN|BOTH)-s(\d+)$")
 
 
@@ -66,13 +70,23 @@ def _ratio(a: float, b: float) -> float:
     return a / b if b else float("nan")
 
 
+def _provenance() -> dict:
+    def git(*args: str) -> str:
+        try:
+            return subprocess.run(["git", *args], capture_output=True, text=True,
+                                  check=True).stdout.strip()
+        except (OSError, subprocess.CalledProcessError):
+            return ""
+    return {"git_commit": git("rev-parse", "HEAD") or "unknown",
+            "prereg_tag": git("tag", "--list", PREREG_TAG) == PREREG_TAG}
+
+
 def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int = 2000,
-            seed: int = 0) -> dict:
+            seed: int = 0, seeds: tuple[int, ...] = (0, 1, 2)) -> dict:
     runs = _discover(runs_root)
     if "BASE-s0" not in runs:
         raise FileNotFoundError(f"BASE-s0 detections not found under {runs_root}; the "
                                 "operating point R* is defined by BASE seed 0")
-    seeds = sorted({s for _, s, _ in runs.values()})
     missing = sorted(f"{a}-s{s}" for a in ARMS for s in seeds if f"{a}-s{s}" not in runs)
     manifests_dir = Path(manifests_dir)
     names = {s: [n for n, _ in read_manifest(manifests_dir / f"{s}.csv")]
@@ -107,22 +121,30 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
         "shift_fd": fd[run]["per_image"],
     } for run in runs}
 
-    # paired bootstrap: one weight matrix per image set, shared by all runs
-    w_clean = bootstrap_weights(len(names["t-clean"]), n_boot, seed)
-    w_shift = bootstrap_weights(len(shift_names), n_boot, seed + 1)
-    boot = {}
+    # paired bootstrap: one weight matrix per image set, shared by all runs. R* and every
+    # run's equal-recall threshold are re-estimated inside each replicate.
+    w = {"t-clean": bootstrap_weights(len(names["t-clean"]), n_boot, seed),
+         "t-shift": bootstrap_weights(len(shift_names), n_boot, seed + 1)}
+    for i, sname in enumerate(SUBSETS[1:]):
+        w[sname] = bootstrap_weights(len(names[sname]), n_boot, seed + 2 + i)
+    base_shift = matches["BASE-s0"]["t-shift"]
+    r_star_boot = np.array([recall_at(base_shift, 0.5, w["t-shift"][i]) for i in range(n_boot)])
+    boot, boot_sub = {}, {}
     for run, sub in matches.items():
-        cc, ct, cs = (APCalculator(sub[s]) for s in ("t-clean", "t-texture", "t-shift"))
+        calc = {s_: APCalculator(sub[s_]) for s_ in (*SUBSETS, "t-shift", "t-texture")}
+        curve = RecallCurve(sub["t-shift"])
         b = {k: np.empty(n_boot) for k in METRICS}
+        bs = {s_: np.empty(n_boot) for s_ in (*SUBSETS, "t-shift")}
         for i in range(n_boot):
-            b["clean_mAP"][i] = cc(w_clean[i])["mAP"]
-            b["texture_mAP"][i] = ct(w_clean[i])["mAP"]
-            b["shift_mAP"][i] = cs(w_shift[i])["mAP"]
-            b["shift_fd"][i] = false_detections(sub["t-shift"], ops[run].threshold,
-                                                w_shift[i])["per_image"]
+            for s_ in bs:
+                bs[s_][i] = calc[s_](w[s_][i])["mAP"]
+            b["texture_mAP"][i] = calc["t-texture"](w["t-clean"][i])["mAP"]
+            th = curve.threshold(r_star_boot[i], w["t-shift"][i]).threshold
+            b["shift_fd"][i] = false_detections(sub["t-shift"], th, w["t-shift"][i])["per_image"]
+        b["clean_mAP"], b["shift_mAP"] = bs["t-clean"], bs["t-shift"]
         with np.errstate(divide="ignore", invalid="ignore"):
             b["retention"] = b["texture_mAP"] / b["clean_mAP"]
-        boot[run] = b
+        boot[run], boot_sub[run] = b, bs
 
     arm_runs = {a: [r for r, (arm, _, _) in runs.items() if arm == a] for a in ARMS}
     arm_point = {a: {k: float(np.mean([run_metric[r][k] for r in rs])) for k in METRICS}
@@ -142,12 +164,44 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
         return out
 
     confirmatory = {h: compare(*spec) for h, spec in CONFIRMATORY.items()}
-    tested = {h: c["p"] for h, c in confirmatory.items() if c["status"] == "ok"}
-    for h, p_adj in holm(tested).items():
-        confirmatory[h].update(p_holm=p_adj, supported=bool(p_adj < ALPHA))
+    # the preregistered family is all six tests; a missing one enters Holm with p = 1
+    family = {h: (c["p"] if c["status"] == "ok" else 1.0) for h, c in confirmatory.items()}
+    for h, p_adj in holm(family).items():
+        if confirmatory[h]["status"] == "ok":
+            confirmatory[h].update(p_holm=p_adj, supported=bool(p_adj < ALPHA))
+
+    descriptive = {}
+    if "BASE" in arm_boot:
+        ret = arm_boot["BASE"]["retention"]
+        descriptive["H1a_BASE_retention"] = {"estimate": arm_point["BASE"]["retention"],
+                                             "ci95": percentile_ci(ret[np.isfinite(ret)])}
+    subset_diff = {}
+    for s_ in (*SUBSETS, "t-shift"):
+        subset_diff[s_] = {}
+        for arm in ("STY", "SIN", "BOTH"):
+            if arm not in arm_boot or "BASE" not in arm_boot:
+                continue
+            arm_b = np.mean([boot_sub[r][s_] for r in arm_runs[arm]], axis=0)
+            base_b = np.mean([boot_sub[r][s_] for r in arm_runs["BASE"]], axis=0)
+            est = (np.mean([point[r][s_]["mAP"] for r in arm_runs[arm]])
+                   - np.mean([point[r][s_]["mAP"] for r in arm_runs["BASE"]]))
+            subset_diff[s_][arm] = {"estimate": float(est),
+                                    "ci95": percentile_ci(arm_b - base_b)}
 
     exploratory = {f"{arm}_vs_BASE_{metric}": compare(arm, metric, None)
                    for arm in ("STY", "SIN", "BOTH") for metric in METRICS}
+    exploratory["subset_mAP_vs_BASE"] = subset_diff
+
+    coco_check = {}
+    for run, (_, _, path) in runs.items():
+        for s_ in ("val-all", "t-texture"):
+            f = path / "eval" / f"{s_}.metrics.json"
+            if f.exists():
+                ref = json.loads(f.read_text())["mAP"]
+                diff = abs(ref - point[run][s_]["mAP"])
+                coco_check.setdefault(run, {})[s_] = {
+                    "pycocotools": ref, "ours": point[run][s_]["mAP"], "abs_diff": diff,
+                    "agrees": bool(diff <= COCO_TOLERANCE)}
     if all(a in arm_boot for a in ARMS):
         add = (arm_boot["BOTH"]["shift_mAP"] - arm_boot["BASE"]["shift_mAP"]
                - (arm_boot["STY"]["shift_mAP"] - arm_boot["BASE"]["shift_mAP"])
@@ -211,6 +265,11 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
         "footage_thresholds": {r: vars(o) for r, o in foot.items()},
         "footage_R_star": r_val,
         "confirmatory": confirmatory,
+        "holm_family_size": len(family),
+        "thresholds_in_bootstrap": "re-estimated per replicate",
+        "descriptive": descriptive,
+        "coco_check": coco_check,
+        "provenance": _provenance(),
         "exploratory": exploratory,
         "arms": arms,
         "t_corrupt": t_corrupt,

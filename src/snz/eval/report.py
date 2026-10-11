@@ -35,7 +35,14 @@ def render_report(r: dict) -> str:
                      f"[{_n(lo, 4)}, {_n(hi, 4)}] | {_n(c['p'], 4)} | {_n(c['p_holm'], 4)} | "
                      f"{'yes' if c['supported'] else 'no'} |")
     lines += ["", "Metrics: retention = mAP(T-texture) / mAP(T-clean); shift_mAP = mAP on pooled "
-              "T-shift; shift_fd = false detections per image on T-shift at equal recall.", ""]
+              "T-shift; shift_fd = false detections per image on T-shift at equal recall. "
+              f"Holm family: {r['holm_family_size']} tests (missing ones enter with p = 1). "
+              f"Equal-recall thresholds in the bootstrap: {r['thresholds_in_bootstrap']}.", ""]
+    h1a = r["descriptive"].get("H1a_BASE_retention")
+    if h1a:
+        lo, hi = h1a["ci95"]
+        lines += [f"H1a (descriptive): BASE retention = {_n(h1a['estimate'], 3)} "
+                  f"[{_n(lo, 3)}, {_n(hi, 3)}].", ""]
 
     op = r["operating_point"]
     lines += ["## Equal-recall operating point", "",
@@ -67,9 +74,20 @@ def render_report(r: dict) -> str:
         types = " | ".join(_ms(v, 1.0, 3) for v in arm["shift_fd_by_type"].values())
         lines.append(f"| {a} | {_ms(arm['retention'], 1.0, 3)} | "
                      f"{_ms(arm['shift_fd_per_image'], 1.0, 3)} | {types} |")
+    lines += ["", "## arm − BASE mAP by subset (×100, 95% bootstrap CI; descriptive)", "",
+              "| Subset | STY | SIN | BOTH |", "|---|---|---|---|"]
+    for s_, by_arm in r["exploratory"]["subset_mAP_vs_BASE"].items():
+        cells = []
+        for arm in ("STY", "SIN", "BOTH"):
+            c = by_arm.get(arm)
+            cells.append("—" if not c else f"{c['estimate'] * 100:+.1f} "
+                         f"[{c['ci95'][0] * 100:+.1f}, {c['ci95'][1] * 100:+.1f}]")
+        lines.append(f"| {s_} | " + " | ".join(cells) + " |")
     lines += ["", "## Exploratory (CIs, no tests)", "", "| Comparison | Estimate | 95% CI |",
               "|---|---|---|"]
     for name, c in r["exploratory"].items():
+        if name == "subset_mAP_vs_BASE":
+            continue
         if "ci95" not in c:
             lines.append(f"| {name} | — | {c.get('status', '')} |")
             continue
@@ -83,6 +101,14 @@ def render_report(r: dict) -> str:
         for run, c in r["t_corrupt"].items():
             lines.append(f"| {run} | {c['images']} | {_n(c['clean_mAP'] * 100, 1)} | "
                          f"{_n(c['mPC'] * 100, 1)} | {_n(c['rPC'], 3)} |")
+    if r.get("coco_check"):
+        bad = [f"{run}/{s_}" for run, d in r["coco_check"].items() for s_, c in d.items()
+               if not c["agrees"]]
+        lines += ["", f"pycocotools cross-check: {sum(len(d) for d in r['coco_check'].values())} "
+                  f"comparisons, disagreements > 0.1 mAP points: {', '.join(bad) or 'none'}."]
+    prov = r.get("provenance", {})
+    lines += ["", f"Code: {prov.get('git_commit', '?')}; prereg-v1 tag present: "
+              f"{prov.get('prereg_tag')}."]
     lines += ["", "## Footage thresholds (full-val equal recall)", "",
               f"R*_val = {_n(r['footage_R_star'], 4)}.", "", "| Run | Threshold | Flagged |",
               "|---|---|---|"]

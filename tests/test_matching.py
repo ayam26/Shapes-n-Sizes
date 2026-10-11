@@ -87,3 +87,11 @@ def test_subset_reindexes_images():
 def test_unknown_image_rejected():
     with pytest.raises(ValueError, match="zzz.jpg"):
         match_split([], [_det("zzz.jpg")])
+
+
+def test_detection_overlapping_only_an_ignore_region_is_not_invented():
+    # IoU .143 with an ignore region (crowd IoU .25 < .5, so not absorbed): spec §7.3 calls a
+    # detection invented only if IoU < 0.1 with every ground-truth box
+    frame = Frame("a.jpg", "clear", "daytime", (Box("car", 0, 0, 100, 100, ignore=True),))
+    det = {"name": "a.jpg", "boxes": [[50, 50, 150, 150]], "labels": ["car"], "scores": [0.9]}
+    assert match_split([frame], [det]).det_fd_type.tolist() == [FD_POOR_LOC]

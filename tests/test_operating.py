@@ -39,8 +39,20 @@ def test_threshold_for_recall_picks_highest_threshold_reaching_target():
 
 
 def test_unreachable_recall_is_flagged_at_max_recall():
+    # max recall .75 is first reached at score .4; the duplicate at .3 adds nothing
     op = threshold_for_recall(_split(), 1.0)
-    assert op.flagged and op.recall == pytest.approx(0.75) and op.threshold == pytest.approx(0.3)
+    assert op.flagged and op.recall == pytest.approx(0.75) and op.threshold == pytest.approx(0.4)
+
+
+def test_weighted_threshold_for_recall():
+    m = _split()
+    # image a dropped: only b's GT count (2); its TP at .4 gives recall .5
+    op = threshold_for_recall(m, 0.5, weights=np.array([0, 1]))
+    assert op.threshold == pytest.approx(0.4) and not op.flagged
+
+
+def test_false_detection_counts_are_absolute_too():
+    assert false_detections(_split(), 0.0)["count"] == pytest.approx(2)
 
 
 def test_false_detections_per_image_and_types():
