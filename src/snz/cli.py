@@ -65,7 +65,6 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--manifest", type=Path, required=True)
     p.add_argument("--images", type=Path, required=True)
     p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
-    p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
     p.add_argument("--out", type=Path, required=True, help="directory for detections + metrics")
     p.add_argument("--stylized-copy", type=int, help="read <stem>_s<N>.jpg (T-texture: 1)")
     p.add_argument("--device", default="cuda")
@@ -168,11 +167,14 @@ def _cmd_evaluate(args) -> int:
     from snz.eval.coco_eval import evaluate
     from snz.eval.guard import ensure_split_allowed
     from snz.eval.predict import predict, write_detections
-    from snz.train.config import load_recipe
+    from snz.train.config import Recipe
     from snz.train.model import build_model
 
     ensure_split_allowed(args.split, manifest=args.manifest)
-    recipe = load_recipe(args.recipe)
+    run_json = args.checkpoint.parent / "run.json"
+    if not run_json.exists():
+        raise FileNotFoundError(f"{run_json} missing: evaluate only checkpoints of finished runs")
+    recipe = Recipe(**json.loads(run_json.read_text())["recipe"])
     frames, _ = load_frames(args.labels)
     frames = select_frames(frames, [n for n, _ in read_manifest(args.manifest)])
     model = build_model(None, trainable_layers=recipe.trainable_layers,
@@ -188,7 +190,7 @@ def _cmd_evaluate(args) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     write_detections(args.out / f"{args.split}.detections.jsonl", records)
     metrics = {"split": args.split, "checkpoint": str(args.checkpoint),
-               **evaluate(frames, records)}
+               "min_size": recipe.min_sizes[-1], **evaluate(frames, records)}
     (args.out / f"{args.split}.metrics.json").write_text(json.dumps(metrics, indent=2))
     print(json.dumps({k: metrics[k] for k in ("split", "mAP", "AP50")}, indent=2))
     return 0

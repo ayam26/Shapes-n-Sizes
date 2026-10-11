@@ -57,3 +57,10 @@ def test_forward_on_cpu():
     with torch.no_grad():
         out = model([torch.rand(3, 48, 64)])
     assert set(out[0]) == {"boxes", "labels", "scores"}
+
+
+def test_roi_pooler_scales_are_fixed_up_front():
+    model = build_model(_state(0))
+    pool = model.roi_heads.box_roi_pool
+    assert pool.scales == [1 / 4, 1 / 8, 1 / 16, 1 / 32]
+    assert pool.map_levels is not None

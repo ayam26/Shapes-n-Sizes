@@ -17,6 +17,7 @@ from torchvision.models import ResNet50_Weights, resnet50
 from torchvision.models.detection import FasterRCNN
 from torchvision.models.detection.backbone_utils import _resnet_fpn_extractor
 from torchvision.ops.misc import FrozenBatchNorm2d
+from torchvision.ops.poolers import initLevelMapper
 
 from snz.data.bdd import CLASSES
 from snz.hashing import KNOWN_SHA256, verify_sha256
@@ -53,5 +54,12 @@ def build_model(
     if backbone_state is not None:
         body.load_state_dict(backbone_state)
     backbone = _resnet_fpn_extractor(body, trainable_layers)
-    return FasterRCNN(backbone, num_classes=NUM_CLASSES, min_size=min_size, max_size=max_size,
-                      **kwargs)
+    model = FasterRCNN(backbone, num_classes=NUM_CLASSES, min_size=min_size, max_size=max_size,
+                       **kwargs)
+    # torchvision infers these from the first batch and does not save them; inputs are padded
+    # to multiples of 32, so the FPN levels P2-P5 are always strides 4-32. Fixing them keeps
+    # a resumed run identical to an uninterrupted one.
+    pool = model.roi_heads.box_roi_pool
+    pool.scales = [1 / 4, 1 / 8, 1 / 16, 1 / 32]
+    pool.map_levels = initLevelMapper(2, 5)
+    return model

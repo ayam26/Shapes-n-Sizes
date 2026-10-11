@@ -107,3 +107,54 @@ def test_divergence_stops_the_run(tmp_path):
     with pytest.raises(FloatingPointError, match="non-finite"):
         _run(tmp_path, tmp_path / "nan", replace(tiny_recipe(), lr=1e12, warmup_iters=0))
     assert not (tmp_path / "nan" / "final.pt").exists()
+
+
+def test_resume_is_exact_with_scale_jitter(tmp_path):
+    recipe = replace(tiny_recipe(), min_sizes=[32, 40, 48, 56], max_size=80)
+    _run(tmp_path, tmp_path / "straight", recipe)
+    _run(tmp_path, tmp_path / "resumed", recipe, stop_at=2)
+    _run(tmp_path, tmp_path / "resumed", recipe)
+    a = torch.load(tmp_path / "straight" / "final.pt", weights_only=True)
+    b = torch.load(tmp_path / "resumed" / "final.pt", weights_only=True)
+    for k in a:
+        torch.testing.assert_close(a[k], b[k])
+
+
+def test_non_finite_gradient_stops_before_the_step(tmp_path, monkeypatch):
+    import snz.train.train as train_mod
+
+    monkeypatch.setattr(train_mod, "clip_grad_norm_",
+                        lambda params, max_norm: torch.tensor(float("inf")))
+    with pytest.raises(FloatingPointError, match="gradient"):
+        _run(tmp_path, tmp_path / "g", tiny_recipe())
+
+
+def test_missing_stylized_copies_fail_before_training(tmp_path):
+    frames = _data(tmp_path)
+    write_image(tmp_path / "sty" / "f0_s1.jpg", size=(64, 48))  # the rest are missing
+    with pytest.raises(FileNotFoundError, match="7 stylized"):
+        train_run(arm=Arm("STY", "in1k_v1", True), seed=0, recipe=tiny_recipe(), frames=frames,
+                  image_dir=tmp_path / "img", stylized_dir=tmp_path / "sty", n_copies=2,
+                  backbone_state=_state(), out_dir=tmp_path / "s", device="cpu")
+    assert not (tmp_path / "s" / "log.jsonl").exists()
+
+
+def test_evaluate_uses_the_runs_own_recipe(tmp_path):
+    from helpers import frame_json, write_labels
+    from snz.cli import main
+    from snz.data.manifest import write_manifest
+
+    _run(tmp_path, tmp_path / "run", tiny_recipe())
+    labels = write_labels(tmp_path / "l.json",
+                          [frame_json(f"f{i}.jpg", labels=[("car", 5, 5, 30, 30)])
+                           for i in range(4)])
+    write_manifest(tmp_path / "m" / "id-val.csv", [(f"f{i}.jpg", "h") for i in range(4)])
+    args = ["evaluate", "--split", "id-val", "--labels", str(labels),
+            "--manifest", str(tmp_path / "m" / "id-val.csv"), "--images", str(tmp_path / "img"),
+            "--out", str(tmp_path / "ev"), "--device", "cpu"]
+    assert main([*args, "--checkpoint", str(tmp_path / "run" / "final.pt")]) == 0
+    metrics = json.loads((tmp_path / "ev" / "id-val.metrics.json").read_text())
+    assert metrics["min_size"] == 48
+    (tmp_path / "run" / "run.json").unlink()
+    with pytest.raises(FileNotFoundError, match="run.json"):
+        main([*args, "--checkpoint", str(tmp_path / "run" / "final.pt")])

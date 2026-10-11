@@ -16,10 +16,12 @@ from pathlib import Path
 
 import torch
 from torch import Tensor
+from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader, Sampler
 
 from snz.data.bdd import Frame
 from snz.fsutil import atomic_replace
+from snz.stylize.build import stylized_name
 from snz.train.config import Arm, Recipe, recipe_sha256
 from snz.train.dataset import BDDDetection, collate
 from snz.train.model import build_model
@@ -82,6 +84,12 @@ def train_run(
     out_dir.mkdir(parents=True, exist_ok=True)
     if arm.stylized and stylized_dir is None:
         raise ValueError(f"arm {arm.name} trains on stylized copies; stylized_dir is required")
+    if arm.stylized:
+        missing = [n for f in frames for c in range(1, n_copies + 1)
+                   if not (Path(stylized_dir) / (n := stylized_name(f.name, c))).exists()]
+        if missing:
+            raise FileNotFoundError(f"{len(missing)} stylized copies missing in {stylized_dir}, "
+                                    f"e.g. {missing[:3]} (run `snz stylize`)")
     identity = {"arm": arm.name, "backbone": arm.backbone, "stylized": arm.stylized,
                 "seed": seed, "recipe_sha256": recipe_sha256(recipe), "frames": len(frames)}
 
@@ -153,6 +161,11 @@ def train_run(
                                              f"(last good checkpoint: {last})")
                 opt.zero_grad(set_to_none=True)
                 loss.backward()
+                grad_norm = clip_grad_norm_(params, float("inf"))  # measure only
+                if not torch.isfinite(grad_norm):
+                    raise FloatingPointError(f"non-finite gradient at iteration {it} "
+                                             f"(loss {loss.item():.4f}); weights not updated; "
+                                             f"last good checkpoint: {last}")
                 opt.step()
                 it += 1
                 if it % recipe.log_every == 0 or it == end:
