@@ -1,0 +1,3 @@
+# Split construction (spec §4.2). Changing these changes every manifest.
+seed = 0
+idval_fraction = 0.1
