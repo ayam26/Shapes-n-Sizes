@@ -64,6 +64,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_evaluate)
 
+    p = commands.add_parser("smoke", help="G1: load both backbones, short training run")
+    p.add_argument("--sin-weights", type=Path, required=True)
+    p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
+    p.add_argument("--work-dir", type=Path, required=True, help="scratch dir outside git")
+    p.add_argument("--out", type=Path, default=Path("results/g1_smoke.json"))
+    p.add_argument("--iterations", type=int, default=50)
+    p.add_argument("--device", default="cuda")
+    p.set_defaults(func=_cmd_smoke)
+
     return parser
 
 
@@ -152,6 +161,20 @@ def _cmd_evaluate(args) -> int:
                **evaluate(frames, records)}
     (args.out / f"{args.split}.metrics.json").write_text(json.dumps(metrics, indent=2))
     print(json.dumps({k: metrics[k] for k in ("split", "mAP", "AP50")}, indent=2))
+    return 0
+
+
+def _cmd_smoke(args) -> int:
+    from snz.train.config import load_recipe
+    from snz.train.model import BACKBONES, load_backbone_state
+    from snz.train.smoke import run_smoke
+
+    states = {kind: load_backbone_state(kind, args.sin_weights) for kind in BACKBONES}
+    report = run_smoke(states, load_recipe(args.recipe), args.work_dir, device=args.device,
+                       iterations=args.iterations)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(report, indent=2))
+    print(json.dumps(report["backbones"], indent=2))
     return 0
 
 
