@@ -6,3 +6,11 @@ __pycache__/
 .DS_Store
 perception-lab/data/perception.sqlite*
 perception-lab/state/lock*
+# snz: data, weights, and run outputs never go in git
+/data/
+/runs/
+*.pt
+*.pth
+*.pth.tar
+.pytest_cache/
+.ruff_cache/
