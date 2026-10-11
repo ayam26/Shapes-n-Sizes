@@ -25,7 +25,10 @@ def tiny_recipe():
 
 def test_configs_load():
     r = load_recipe(CONFIGS / "recipe.toml")
-    assert r.min_sizes[-1] == 720 and r.p_original == 0.5 and r.trainable_layers == 3
+    # the last scale is the evaluation size: the largest, and max_size fits 16:9 at that size
+    assert r.min_sizes[-1] == max(r.min_sizes)
+    assert r.max_size >= round(r.min_sizes[-1] * 16 / 9)
+    assert r.p_original == 0.5 and r.trainable_layers == 3 and r.frozen
     arms = load_arms(CONFIGS / "arms.toml")
     assert arms["BOTH"] == Arm("BOTH", "sin", True)
     assert list(arms) == ["BASE", "STY", "SIN", "BOTH"]
