@@ -78,6 +78,27 @@ def netguard_probe():
     return {"offline_guard": netguard.enabled(), "target": "1.1.1.1:443", "result": result}
 
 
+@app.get("/api/models")
+def list_models():
+    """Frozen model locks available for runs, plus what Ollama currently holds in (unified) GPU memory."""
+    locks = []
+    for f in sorted(config.EXPERIMENTS.glob("model-lock*.json")):
+        d = json.loads(f.read_text())
+        locks.append({"lock_file": f.name, "model_id": d["model_id"], "digest": d.get("model_digest"),
+                      "quantization": d.get("quantization"), "parameter_size": d.get("parameter_size"),
+                      "frozen": d.get("frozen", False), "headline": f.name == "model-lock.json"})
+    loaded = []
+    try:
+        import urllib.request
+        lock = config.load_json("model-lock.json")
+        with urllib.request.urlopen(lock["endpoint"].replace("/api/chat", "/api/ps"), timeout=5) as r:
+            loaded = [{"model": m["name"], "size_bytes": m.get("size"), "vram_bytes": m.get("size_vram"),
+                       "expires_at": m.get("expires_at")} for m in json.load(r).get("models", [])]
+    except Exception as e:  # report, do not fail the listing
+        loaded = [{"error": type(e).__name__}]
+    return {"locks": locks, "loaded": loaded}
+
+
 # ---------- cases ----------
 class CaseMeta(BaseModel):
     case_id: str | None = None
@@ -193,6 +214,8 @@ def create_run(req: RunRequest):
         raise HTTPException(422, f"unknown method {e}")
     if any(c["split"] == "heldout" for c in cases) and not (cfg["prompts_frozen"] and cfg["lock_frozen"]):
         raise HTTPException(423, "held-out split is sealed until prompts.json and model-lock.json are frozen")
+    if any(c["split"] == "heldout2" for c in cases) and not (cfg["prompts_frozen"] and cfg["lock_frozen"] and cfg["interventions_frozen"]):
+        raise HTTPException(423, "heldout2 is sealed until prompts.json, the model lock and interventions.json are frozen")
     provider = make_provider(cfg["lock"], cfg["output_schema"])
     run_id = f"run-{db.now()[:19].replace(':', '').replace('-', '')}-{secrets.token_hex(2)}"
     db.execute("INSERT INTO runs(run_id, run_key, label, created_at, model_config, model_config_hash, method_ids, status,"

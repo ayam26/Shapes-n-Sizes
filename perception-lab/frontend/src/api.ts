@@ -54,7 +54,12 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json() as Promise<T>;
 }
 
+export interface ModelLock { lock_file: string; model_id: string; digest: string; quantization: string;
+  parameter_size: string; frozen: boolean; headline: boolean }
+export interface ModelsInfo { locks: ModelLock[]; loaded: { model?: string; size_bytes?: number; vram_bytes?: number; error?: string }[] }
+
 export const api = {
+  models: () => j<ModelsInfo>("/api/models"),
   health: () => j<Health>("/api/health"),
   runs: () => j<RunRow[]>("/api/runs"),
   run: (id: string) => j<RunDetail>(`/api/runs/${id}`),

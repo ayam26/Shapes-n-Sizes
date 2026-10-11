@@ -44,6 +44,28 @@ await page.screenshot({ path: join(OUT, "02-after-analyze.png"), fullPage: false
 const evidence = await page.locator(".evidence").innerText();
 await page.screenshot({ path: join(OUT, "03-full-page.png"), fullPage: true });
 
+// Cross-model comparison on the same captured image (physical truck, oblique view)
+await page.getByLabel("Physical truck").check();
+await page.waitForTimeout(400);
+const t1 = Date.now();
+let compare = { phases: [], ok: false };
+const cmpBtn = page.getByRole("button", { name: /Compare all/ });
+if (await cmpBtn.count()) {
+  await cmpBtn.click();
+  const ph = new Set();
+  while (Date.now() - t1 < 180000) {
+    const txt = await page.locator(".status").innerText();
+    for (const p of ["queued", "running", "completed", "error"]) if (txt.includes(p)) ph.add(p);
+    if (txt.includes("completed") || txt.includes("error")) break;
+    await page.waitForTimeout(150);
+  }
+  await page.waitForTimeout(2500);
+  const ev = await page.locator(".evidence").innerText();
+  compare = { phases: [...ph], elapsed_ms: Date.now() - t1, ok: ev.includes("Same image across local models"),
+    models_in_table: ["nemotron3:33b", "qwen3.6:35b", "gemma4:26b"].filter((m) => ev.includes(m)) };
+  await page.screenshot({ path: join(OUT, "05-compare-models.png"), fullPage: false });
+}
+
 // Gallery interaction: filter to non-correct cases and open one
 await page.locator(".filters select").first().selectOption("any_error");
 await page.waitForTimeout(400);
@@ -56,7 +78,7 @@ if (nCards) {
 const summary = {
   app: APP, at: new Date().toISOString(), phases_seen: [...seen], elapsed_ms: Date.now() - t0,
   evidence_has_both_methods: evidence.includes("RGB baseline") && evidence.includes("RGB + structure prompt"),
-  identical_input_banner: evidence.includes("byte-identical input"), gallery_non_correct_cards: nCards, page_errors: errors,
+  identical_input_banner: evidence.includes("byte-identical input"), gallery_non_correct_cards: nCards, compare_models: compare, page_errors: errors,
 };
 writeFileSync(join(OUT, "ui-smoke.json"), JSON.stringify(summary, null, 2));
 console.log(JSON.stringify(summary, null, 2));

@@ -2,7 +2,7 @@ import { Appearance, FAMILY, Lighting, SceneSpec, TRUTH, TargetType, makeSpec } 
 
 export interface ManifestEntry {
   case_id: string;
-  split: "development" | "heldout" | "discovery" | "fidelity";
+  split: "development" | "heldout" | "discovery" | "fidelity" | "heldout2";
   pair_of?: string;
   family: string;
   truth: string;
@@ -67,4 +67,23 @@ export function buildFidelityManifest(): ManifestEntry[] {
     spec.conditions.core_split = c.split;
     return { ...c, case_id: c.case_id.replace("core-", "fid-"), split: "fidelity", pair_of: c.case_id, spec };
   });
+}
+
+/** Fresh sealed test set for the model-improvement study: new seed (different trees, billboard) and new viewing
+ *  angles (35°, 60°) never used before; 3 targets x 3 appearances x 2 angles x 2 lights = 36, standard quality. */
+export function buildHeldout2Manifest(): ManifestEntry[] {
+  const out: ManifestEntry[] = [];
+  let i = 0;
+  for (const az of [35, 60])
+    for (const target of TARGETS)
+      for (const appearance of APPEARANCES)
+        for (const lighting of LIGHTS) {
+          i += 1;
+          const spec = makeSpec({ seed: 29, target, appearance, camera_preset: "cam_b_oblique", camera: { azimuth_deg: az }, lighting });
+          spec.camera_preset = `oblique_${az}`;
+          spec.conditions.camera = `oblique_${az}`;
+          out.push({ case_id: `h2-${String(i).padStart(3, "0")}`, split: "heldout2", family: FAMILY[target], truth: TRUTH[target],
+            observability: "unchecked", spec });
+        }
+  return out;
 }
