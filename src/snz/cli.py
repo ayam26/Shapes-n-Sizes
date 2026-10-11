@@ -135,6 +135,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", type=Path, default=Path("results/footage.json"))
     p.set_defaults(func=_cmd_audit_score)
 
+    p = commands.add_parser("gnn-outlines", help="GNN stage: SAM 2 outlines of BASE detections")
+    p.add_argument("--detections", type=Path, required=True, help="<split>.detections.jsonl")
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True, help="<split>.npz")
+    p.add_argument("--stylized-copy", type=int, help="T-texture: read <stem>_s<N>.jpg")
+    p.add_argument("--segmenter", choices=["sam2", "grabcut"], default="sam2")
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--sam2-checkpoint", type=Path)
+    p.set_defaults(func=_cmd_gnn_outlines)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -386,6 +396,38 @@ def _cmd_audit_score(args) -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(result, indent=2))
     print(json.dumps(result["audit"], indent=2))
+    return 0
+
+
+def _cmd_gnn_outlines(args) -> int:
+    import sys
+
+    from snz.eval.predict import read_detections
+    from snz.gnn.outlines import (
+        GrabCutSegmenter,
+        Sam2Segmenter,
+        extract_outlines,
+        save_outlines,
+    )
+
+    file_name = None
+    if args.stylized_copy is not None:
+        from snz.stylize.build import stylized_name
+
+        file_name = functools.partial(stylized_name, copy=args.stylized_copy)
+    segmenter = (Sam2Segmenter(device=args.device, checkpoint=args.sam2_checkpoint)
+                 if args.segmenter == "sam2" else GrabCutSegmenter())
+
+    def progress(done: int, total: int) -> None:
+        if done % 250 == 0 or done == total:
+            print(f"outlines {done}/{total}", file=sys.stderr, flush=True)
+
+    o = extract_outlines(read_detections(args.detections), args.images, segmenter, file_name,
+                         progress)
+    save_outlines(args.out, o)
+    print(json.dumps({"images": len(o.names), "outlines": len(o.score),
+                      "ok_rate": float(o.ok.mean()) if len(o.ok) else None,
+                      "segmenter": args.segmenter}))
     return 0
 
 
