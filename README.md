@@ -1,16 +1,12 @@
 # Shapes-n-Sizes
 
-Can vision-language models tell a real three-dimensional object from a flat picture of it — and which visual cues do they rely on?
+Do road-object detectors rely on texture rather than shape — and does training them to be shape-biased make them find more real objects and invent fewer fake ones?
 
-This is a research project in two phases:
-
-1. **Diagnose:** render controlled synthetic road scenes where a printed picture is matched to the real object from the camera's viewpoint, re-introduce one depth cue at a time (viewing angle, shadows, framing, shading consistency), and measure where open VLMs change their answer.
-2. **Train:** fine-tune a small open VLM on synthetic examples with different objects, and test whether the skill generalizes to unseen objects, an unseen environment, and real photographs — or whether it learns shortcuts.
-
-Models run locally on an ASUS Ascent GX10. Stimulus generation, the batch runner, and analysis live in this repository.
+This research project trains an object detector on an ASUS Ascent GX10 in four arms (standard vs. shape-biased backbone × normal vs. texture-scrambled training images), trains only on clear daytime dashcam images from BDD100K, and tests on night, rain, snow, and fog, on texture-scrambled images, and on unfiltered dashcam footage with a blind audit of real, invented, and missed objects.
 
 ## Contents
 
-- [`docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md`](docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md) — research design spec for the two-phase study.
+- [`docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md`](docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md) — current research design spec.
+- [`docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md`](docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md) — earlier VLM depiction-cue design (superseded).
 - [`perception-lab/`](perception-lab/README.md) — local automotive-perception testbed on the ASUS Ascent GX10 (UCSC ASUS Local AI hackathon). Start with `perception-lab/scripts/start.sh`; results in [`perception-lab/artifacts/report.md`](perception-lab/artifacts/report.md).
 - [`perception-lab-design.md`](perception-lab-design.md) — the hackathon build specification.

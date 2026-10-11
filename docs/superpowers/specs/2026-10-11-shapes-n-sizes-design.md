@@ -1,7 +1,9 @@
 # Shapes-n-Sizes — Research Design Spec
 
+> **Superseded** by [`2026-10-11-shape-biased-detector-design.md`](2026-10-11-shape-biased-detector-design.md). The project was re-scoped from a VLM depiction-cue study to training a shape-biased road-object detector evaluated on dashcam data. Kept for history.
+
 - **Date:** 2026-10-11
-- **Status:** design approved in conversation; awaiting review of this written spec
+- **Status:** superseded
 - **Supersedes for implementation purposes:** `perception-lab-design.md` (kept as background; see §2)
 - **Deliverable:** an arXiv / workshop-style paper with released dataset, code, and preregistration
 
