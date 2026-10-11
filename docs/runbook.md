@@ -62,3 +62,25 @@ with `results/pilot/*/id-val.metrics.json` (not the detection files).
 Only id-val is evaluated here; test splits stay blocked until `prereg-v1`.
 
 A run that stops partway (power, SSH drop) resumes when the same command is run again.
+
+## G4 — preregistration
+
+After G3: fill in `prereg/prereg.md` (frozen recipe hash, split counts), commit, then
+`git tag prereg-v1 && git push origin prereg-v1`. Only now do test splits open.
+
+## G5 — the 12 runs
+
+```bash
+nohup scripts/run_g5.sh > ~/snz-data/g5.log 2>&1 < /dev/null &
+```
+
+Seed 0 of every arm runs first. Rerunning the script skips finished runs and resumes an
+interrupted one.
+
+## G6 — evaluation and analysis
+
+```bash
+scripts/run_g6.sh   # predictions on val-all and T-texture per run, then `snz analyze`
+```
+
+Commit `results/analysis.json` and `results/report.md` (not the detection files).
