@@ -1,0 +1,28 @@
+{
+  "counts": {
+    "id-val": 1248,
+    "t-clean": 1764,
+    "t-fog": 5,
+    "t-night": 3929,
+    "t-rain": 396,
+    "t-snow": 422,
+    "train": 11229
+  },
+  "dropped_duplicates": 0,
+  "idval_fraction": 0.1,
+  "labels": {
+    "train": {
+      "boxes": 1287922,
+      "dropped_degenerate": 483,
+      "dropped_unknown": {},
+      "frames": 70000
+    },
+    "val": {
+      "boxes": 185517,
+      "dropped_degenerate": 61,
+      "dropped_unknown": {},
+      "frames": 10000
+    }
+  },
+  "seed": 0
+}
