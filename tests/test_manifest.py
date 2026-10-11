@@ -117,3 +117,20 @@ def test_val_all_manifest_lists_every_val_frame(tmp_path):
     assert sorted(n for n, _ in read_manifest(out / "val-all.csv")) == [
         "v_clean.jpg", "v_night.jpg", "v_rain.jpg"]
     assert summary["counts"]["val-all"] == 3 and (out / "t-dusk.csv").exists()
+
+
+def test_descriptive_split_copies_of_test_images_are_dropped(tmp_path):
+    val = [frame_json("v_rain.jpg", weather="rainy"),
+           frame_json("v_over.jpg", weather="overcast"),
+           frame_json("v_over2.jpg", weather="overcast")]
+    write_image(tmp_path / "val" / "v_rain.jpg", color=(10, 200, 10))
+    write_image(tmp_path / "val" / "v_over.jpg", color=(10, 200, 10))  # same pixels as v_rain
+    write_image(tmp_path / "val" / "v_over2.jpg", color=(200, 10, 10))
+    write_image(tmp_path / "train" / "tr.jpg", color=(90, 90, 90))
+    out = tmp_path / "m"
+    build_and_write_splits(write_labels(tmp_path / "t.json", [frame_json("tr.jpg")]),
+                           write_labels(tmp_path / "v.json", val), tmp_path / "train",
+                           tmp_path / "val", out, seed=0, idval_fraction=0.0)
+    assert [n for n, _ in read_manifest(out / "t-rain.csv")] == ["v_rain.jpg"]
+    assert [n for n, _ in read_manifest(out / "t-overcast.csv")] == ["v_over2.jpg"]
+    assert "v_over.jpg" in (out / "dropped_duplicates.csv").read_text()

@@ -37,9 +37,15 @@ def build_and_write_splits(
     names = build_splits(train_frames, val_frames, seed, idval_fraction)
 
     held_out = (*TEST_SPLITS, *DESCRIPTIVE_SPLITS)
-    rows = {s: hash_rows(names[s], val_images) for s in held_out}
+    rows = {s: hash_rows(names[s], val_images) for s in TEST_SPLITS}
     forbidden = {h for split_rows in rows.values() for _, h in split_rows}
     dropped_log = []
+    # descriptive splits give way to the hypothesis splits: their copies of test images go
+    for s in DESCRIPTIVE_SPLITS:
+        kept, dropped = drop_hash_duplicates(hash_rows(names[s], val_images), forbidden)
+        rows[s] = kept
+        dropped_log += [(s, name, h) for name, h in dropped]
+        forbidden |= {h for _, h in kept}
     # train first: its hashes are then also forbidden in id-val
     for s in TRAIN_SPLITS:
         kept, dropped = drop_hash_duplicates(hash_rows(names[s], train_images), forbidden)
