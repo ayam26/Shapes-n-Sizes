@@ -20,7 +20,9 @@ const flag = (n) => args.includes(n);
 const opt = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 const APP = opt("--app", "http://127.0.0.1:5173");
 const API = opt("--api", "http://127.0.0.1:8765");
-const MANIFEST = join(ROOT, "experiments", "manifest.json");
+const MANIFEST = join(ROOT, "experiments", opt("--manifest-file", "manifest.json"));
+const LOG_NAME = opt("--manifest-file") ? `render-log-${opt("--manifest-file").replace(/^manifest-|\.json$/g, "")}.json`
+  : `render-log-${opt("--split", "all")}.json`;
 const sha = (b) => createHash("sha256").update(b).digest("hex");
 const fromDataUrl = (u) => Buffer.from(u.split(",")[1], "base64");
 
@@ -30,6 +32,17 @@ page.on("console", (m) => m.type() === "error" && console.error("[page]", m.text
 await page.goto(`${APP}/?mode=capture`);
 await page.waitForFunction(() => document.body.dataset.ready === "1");
 const version = await page.evaluate(() => window.__pl.version);
+
+if (flag("--build-fidelity-manifest")) {
+  const cases = await page.evaluate(async () => (await import("/src/scene/manifest.ts")).buildFidelityManifest());
+  const out = join(ROOT, "experiments", "manifest-fidelity.json");
+  writeFileSync(out, JSON.stringify({ schema_version: 1, renderer_version: version, created_at: new Date().toISOString(),
+    note: "EXPLORATORY high-fidelity render study: core-NNN re-rendered with quality=high as fid-NNN (identical target, appearance, camera, lighting, seed). Never pooled with core metrics.",
+    cases }, null, 2) + "\n");
+  console.log(`fidelity manifest: ${cases.length} cases, sha256 ${sha(readFileSync(out))}`);
+  await browser.close();
+  process.exit(0);
+}
 
 if (flag("--build-manifest")) {
   const m = await page.evaluate(async () => {
@@ -81,7 +94,7 @@ for (const c of cases) {
   }
   if (r1.textureDataUrl) {
     const tex = fromDataUrl(r1.textureDataUrl);
-    const p = join(assetsDir, `depiction-${c.spec.appearance}.png`);
+    const p = join(assetsDir, `depiction-${c.spec.appearance}${c.spec.quality === "high" ? "-hq" : ""}.png`);
     if (!existsSync(p)) writeFileSync(p, tex);
     entry.texture_sha256 = sha(tex);
     entry.texture_matches_saved = sha(readFileSync(p)) === entry.texture_sha256;
@@ -103,4 +116,4 @@ for (const c of cases) {
   console.log(JSON.stringify(entry));
 }
 await browser.close();
-writeFileSync(join(ROOT, "experiments", `render-log-${opt("--split", "all")}.json`), JSON.stringify({ renderer_version: version, rendered_at: new Date().toISOString(), cases: log }, null, 2));
+writeFileSync(join(ROOT, "experiments", LOG_NAME), JSON.stringify({ renderer_version: version, rendered_at: new Date().toISOString(), cases: log }, null, 2));

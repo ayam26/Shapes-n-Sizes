@@ -2,7 +2,8 @@ import { Appearance, FAMILY, Lighting, SceneSpec, TRUTH, TargetType, makeSpec } 
 
 export interface ManifestEntry {
   case_id: string;
-  split: "development" | "heldout" | "discovery";
+  split: "development" | "heldout" | "discovery" | "fidelity";
+  pair_of?: string;
   family: string;
   truth: string;
   observability: "clear" | "ambiguous" | "unchecked";
@@ -55,4 +56,15 @@ export function buildDiscoveryManifest(): ManifestEntry[] {
           truth: TRUTH[target], observability: "unchecked", spec });
       }
   return out;
+}
+
+/** Exploratory high-fidelity study: the 36 core cases re-rendered with quality "high" (same target, appearance,
+ *  camera, lighting, seed). fid-NNN pairs with core-NNN. */
+export function buildFidelityManifest(): ManifestEntry[] {
+  return buildCoreManifest().map((c) => {
+    const spec = makeSpec({ seed: c.spec.seed, target: c.spec.target, appearance: c.spec.appearance,
+      camera_preset: c.spec.camera_preset, lighting: c.spec.lighting, quality: "high" });
+    spec.conditions.core_split = c.split;
+    return { ...c, case_id: c.case_id.replace("core-", "fid-"), split: "fidelity", pair_of: c.case_id, spec };
+  });
 }

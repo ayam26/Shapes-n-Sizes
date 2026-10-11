@@ -35,13 +35,21 @@ export function markerRect(built: BuiltScene, size: number): MarkerRect {
  *  is encoded to PNG and sent to the model; nothing else (no labels, no text) is drawn. */
 export function renderSensor(built: BuiltScene, size: number, out?: HTMLCanvasElement): HTMLCanvasElement {
   const r = getSensorRenderer();
-  r.setSize(size, size, false);
+  const hq = !!built.scene.userData.hq;
+  r.toneMapping = hq ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
+  r.shadowMap.type = hq ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+  const ss = hq ? 2 : 1; // high-fidelity study renders at 2x and downsamples
+  r.setSize(size * ss, size * ss, false);
   r.render(built.scene, built.sensorCamera);
   const canvas = out ?? document.createElement("canvas");
   canvas.width = size;
   canvas.height = size;
   const g = canvas.getContext("2d")!;
-  g.drawImage(r.domElement, 0, 0);
+  if (hq) {
+    g.imageSmoothingEnabled = true;
+    g.imageSmoothingQuality = "high";
+    g.drawImage(r.domElement, 0, 0, size, size);
+  } else g.drawImage(r.domElement, 0, 0);
   const m = markerRect(built, size);
   g.strokeStyle = "#ffd400";
   g.lineWidth = 3;
@@ -67,7 +75,7 @@ export function captureSpec(spec: SceneSpec): CaptureResult {
       width: canvas.width,
       height: canvas.height,
       marker: markerRect(built, spec.resolution),
-      textureDataUrl: spec.target === "depiction_board" ? depictionTexture(spec.appearance).dataUrl : null,
+      textureDataUrl: spec.target === "depiction_board" ? depictionTexture(spec.appearance, spec.quality === "high").dataUrl : null,
       rendererVersion: RENDERER_VERSION,
     };
   } finally {

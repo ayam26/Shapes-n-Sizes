@@ -3,6 +3,7 @@ import { REVISION } from "three";
 export type TargetType = "truck" | "depiction_board" | "plain_board";
 export type Appearance = "white_livery" | "striped_livery" | "dark_livery";
 export type Lighting = "day" | "dusk";
+export type Quality = "standard" | "high";
 
 export interface CameraSpec {
   azimuth_deg: number; // orbit angle around the target slot, 0 = looking straight down the road
@@ -21,6 +22,8 @@ export interface SceneSpec {
   lighting: Lighting;
   occluder: boolean;
   resolution: number;
+  /** Absent = standard (the frozen core corpus). "high" = exploratory high-fidelity render study. */
+  quality?: Quality;
   conditions: Record<string, string | number | boolean>;
 }
 
@@ -71,10 +74,11 @@ export function makeSpec(p: {
   camera?: Partial<CameraSpec>;
   lighting: Lighting;
   occluder?: boolean;
+  quality?: Quality;
 }): SceneSpec {
   const base = CAMERA_PRESETS[p.camera_preset] ?? CAMERA_PRESETS.cam_a_ego_lane;
   const camera = { ...base, ...(p.camera ?? {}) };
-  return {
+  const spec: SceneSpec = {
     schema_version: 1,
     seed: p.seed ?? 17,
     target: p.target,
@@ -94,6 +98,11 @@ export function makeSpec(p: {
       occluder: p.occluder ?? false,
     },
   };
+  if (p.quality === "high") {  // only added when used, so standard specs are unchanged
+    spec.quality = "high";
+    spec.conditions.quality = "high";
+  }
+  return spec;
 }
 
 /** Deterministic PRNG (mulberry32). */
