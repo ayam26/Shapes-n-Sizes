@@ -1,0 +1,6 @@
+# Stylization (spec §4.3). Style images: Describable Textures Dataset (README §5.1).
+seed = 0
+test_fraction = 0.2   # held-out styles for T-texture
+train_copies = 2      # stylized copies per training image
+alpha = 1.0           # full stylization, as in Stylized-ImageNet
+style_size = 512      # style image shorter side, px

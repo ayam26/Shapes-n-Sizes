@@ -21,6 +21,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--config", type=Path, default=Path("configs/splits.toml"))
     p.set_defaults(func=_cmd_build_splits)
 
+    p = commands.add_parser("stylize", help="precompute stylized copies (G2)")
+    p.add_argument("--set", choices=["train", "t-texture"], required=True)
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--images", type=Path, required=True, help="BDD train (for train) or val dir")
+    p.add_argument("--styles-root", type=Path, required=True, help="e.g. dtd/images")
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--vgg", type=Path, required=True)
+    p.add_argument("--decoder", type=Path, required=True)
+    p.add_argument("--config", type=Path, default=Path("configs/stylize.toml"))
+    p.add_argument("--device", default="cuda")
+    p.set_defaults(func=_cmd_stylize)
+
     return parser
 
 
@@ -33,6 +45,19 @@ def _cmd_build_splits(args) -> int:
         args.out, seed=cfg["seed"], idval_fraction=cfg["idval_fraction"],
     )
     print(json.dumps(summary["counts"], indent=2))
+    return 0
+
+
+def _cmd_stylize(args) -> int:
+    from snz.stylize.adain import Stylizer
+    from snz.stylize.build import load_stylize_config, run_stylize
+
+    cfg = load_stylize_config(args.config)
+    stylizer = Stylizer.from_weights(args.vgg, args.decoder, args.device, cfg.style_size,
+                                     cfg.alpha)
+    rows = run_stylize(args.set, args.manifests, args.images, args.styles_root, args.out, cfg,
+                       stylizer)
+    print(f"{len(rows)} stylized images in {args.out}")
     return 0
 
 
