@@ -42,6 +42,14 @@ case "${1:-}" in
         --manifest manifests/id-val.csv --images "$D/bdd100k/images/100k/train" \
         --out "$G/models" --arms "${SNZ_GNN_ARMS:-GNN,RGB,GNN-SHAPE,GNN-COLOR}" --fold-dir manifests
     ;;
+  rescore)
+    ARMS="${SNZ_GNN_RESCORE_ARMS:-BASE,GNN,RGB,GNN-SHAPE,GNN-COLOR}"
+    uv run snz gnn-rescore --split val-all --outlines "$G/outlines/val-all.npz" \
+      --models "$G/models" --images "$D/bdd100k/images/100k/val" --out-root "$G/runs" --arms "$ARMS"
+    uv run snz gnn-rescore --split t-texture --outlines "$G/outlines/t-texture.npz" \
+      --models "$G/models" --images "$D/stylized/t-texture" --stylized-copy 1 \
+      --out-root "$G/runs" --arms "$ARMS"
+    ;;
   *)
     echo "usage: $0 outlines|train|rescore|analyze" >&2; exit 2 ;;
 esac

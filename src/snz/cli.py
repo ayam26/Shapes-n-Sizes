@@ -164,6 +164,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-pretrained", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=_cmd_gnn_train)
 
+    p = commands.add_parser("gnn-rescore", help="GNN stage: re-score BASE-s0 detections per arm")
+    p.add_argument("--split", required=True, choices=["id-val", "val-all", "t-texture"])
+    p.add_argument("--outlines", type=Path, required=True)
+    p.add_argument("--models", type=Path, required=True)
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--out-root", type=Path, required=True)
+    p.add_argument("--arms", default="BASE,GNN,RGB,GNN-SHAPE,GNN-COLOR")
+    p.add_argument("--stylized-copy", type=int)
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_rescore)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -474,6 +486,41 @@ def _cmd_gnn_train(args) -> int:
                          [a for a in args.arms.split(",") if a], args.device, args.fold_dir,
                          pretrained=not args.no_pretrained)
     print(json.dumps({k: summary[k] for k in ("counts", "fold_b_auroc")}, indent=2))
+    return 0
+
+
+def _cmd_gnn_rescore(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.eval.predict import write_detections
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.outlines import load_outlines
+    from snz.gnn.rescore import rescore
+    from snz.hashing import sha256_file
+
+    if not args.no_guard:
+        ensure_split_allowed(args.split, tag=GNN_PREREG_TAG)
+    file_name = None
+    if args.stylized_copy is not None:
+        from snz.stylize.build import stylized_name
+
+        file_name = functools.partial(stylized_name, copy=args.stylized_copy)
+    o = load_outlines(args.outlines)
+    for arm in [a for a in args.arms.split(",") if a]:
+        if arm != "BASE" and not (args.models / f"{arm}.pt").exists():
+            print(f"{arm}: no model, skipped")
+            continue
+        recs = rescore(o, arm, args.models, image_dir=args.images, file_name=file_name,
+                       device=args.device)
+        run = args.out_root / f"{arm}-s0"
+        write_detections(run / "eval" / f"{args.split}.detections.jsonl", recs)
+        prov_path = run / "provenance.json"
+        prov = json.loads(prov_path.read_text()) if prov_path.exists() else {}
+        prov[args.split] = {
+            "outlines": str(args.outlines), "outlines_sha256": sha256_file(args.outlines),
+            "model_sha256": (sha256_file(args.models / f"{arm}.pt") if arm != "BASE" else None),
+            "ok_rate": float(o.ok.mean()) if len(o.ok) else None}
+        prov_path.write_text(json.dumps(prov, indent=2))
+        print(f"{arm}: {sum(len(r['scores']) for r in recs)} detections on {len(recs)} images")
     return 0
 
 
