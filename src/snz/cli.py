@@ -71,6 +71,16 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_evaluate)
 
+    p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
+    p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--out", type=Path, default=Path("results"))
+    p.add_argument("--bootstrap", type=int, default=2000)
+    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_analyze)
+
     p = commands.add_parser("smoke", help="G1: load both backbones, short training run")
     p.add_argument("--sin-weights", type=Path, required=True)
     p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
@@ -181,6 +191,22 @@ def _cmd_evaluate(args) -> int:
                **evaluate(frames, records)}
     (args.out / f"{args.split}.metrics.json").write_text(json.dumps(metrics, indent=2))
     print(json.dumps({k: metrics[k] for k in ("split", "mAP", "AP50")}, indent=2))
+    return 0
+
+
+def _cmd_analyze(args) -> int:
+    from snz.eval.analyze import analyze
+    from snz.eval.guard import ensure_split_allowed
+    from snz.eval.report import render_report
+
+    if not args.no_guard:  # tests only; real analyses read held-out detections
+        ensure_split_allowed("t-clean")
+    result = analyze(args.runs, args.labels, args.manifests, n_boot=args.bootstrap,
+                     seed=args.seed)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
+    (args.out / "report.md").write_text(render_report(result))
+    print((args.out / "report.md").read_text())
     return 0
 
 
