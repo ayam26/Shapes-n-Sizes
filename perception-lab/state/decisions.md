@@ -11,3 +11,5 @@
 - 05:35Z — Marker = projected bbox of union(truck extents, board extents) + 8 px, yellow 3 px. Identical across target types for a camera, so it does not disclose class. Limitation: in the oblique view it is wide and includes background trees.
 - 05:40Z — Dusk hemisphere intensity raised 0.45→0.75 before any model run (targets were nearly black when back-lit). Scene frozen after this change; manifest sha256 recorded in state/run.json.
 - 05:40Z — Observability left `unchecked` for all cases: no independent reviewer; the builder is not independent.
+- 05:45Z — dev-v1 showed label-definition ambiguity (all 6 plain-board controls → flat_depiction). One revision: identical label definitions added to both prompts (rev 2). dev-v2: 12/18 both methods; 6 controls still flat_depiction. Development numbers are therefore post-tuning and are not an unbiased estimate; held-out is the headline.
+- 2026-10-11T05:46:21Z — FROZE prompts.json (rev 2) and model-lock.json; committed before any held-out request. No further prompt/model changes.

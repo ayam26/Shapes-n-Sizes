@@ -3,19 +3,24 @@
   "started_at": "2026-10-11T05:17:24Z",
   "deadline_at": "2026-10-11T15:17:24Z",
   "status": "running",
-  "phase": "development_runs",
+  "phase": "heldout_run",
   "hardware_verified": true,
   "provider_mode": "ollama-local-verified",
   "model_config_hash": null,
   "manifest_hash": "5eeeb8ad1aa3585ed163de0f8827a7d182aed65e60bf54e5ac790117826ec631",
-  "prompts_frozen_at": null,
+  "prompts_frozen_at": "2026-10-11T05:46:21Z",
   "completed_milestones": [
     "bootstrap: environment inspected, nemotron3:33b image smoke test passed (warm 0.5s)",
     "backend: FastAPI+SQLite+single GPU worker on GX10, 30 tests passing",
     "scene+corpus: procedural Three.js scene, 60 cases (36 core + 24 discovery) rendered deterministically and uploaded",
-    "e2e: run-20261011T054252-99b6 \u2014 4/4 live nemotron3:33b results, ~1.2-1.4s warm"
+    "e2e: run-20261011T054252-99b6 \u2014 4/4 live nemotron3:33b results, ~1.2-1.4s warm",
+    "dev-v1 run-20261011T054351-a9b8: baseline 9/18, structure 12/18; all 6 plain-board controls -> flat_depiction (label undefined)",
+    "dev-v2 run-20261011T054510-d35c (label definitions added to both prompts): 12/18 both; 6 controls still flat_depiction",
+    "FROZEN prompts rev2 + model lock at 2026-10-11T05:46:21Z (before any held-out output)"
   ],
   "active_jobs": [],
   "blockers": [],
-  "next_action": "Build full comparison UI; run development split (18 cases x 2 methods); then freeze prompts/config"
+  "next_action": "Run held-out split (cam_b_oblique) once with frozen config",
+  "prompts_sha256": "12c05bcabcf1a51883502792b59f6b9fcf7c9e8c5ec2cc156dcf251388430995",
+  "model_lock_sha256": "de2f1d078512198a3d9f9d818d60c12d2bb51f606055b3ff504e841013b48e30"
 }
