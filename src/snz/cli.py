@@ -399,6 +399,9 @@ def _cmd_analyze(args) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
     (args.out / "report.md").write_text(render_report(result))
+    from snz.eval.figures import make_figures
+
+    make_figures(result, args.out / "figures")
     print((args.out / "report.md").read_text())
     return 0
 

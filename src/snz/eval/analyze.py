@@ -18,7 +18,7 @@ import numpy as np
 
 from snz.data.bdd import load_frames, select_frames
 from snz.data.manifest import read_manifest
-from snz.eval.ap import APCalculator
+from snz.eval.ap import RECALL_POINTS, APCalculator
 from snz.eval.bootstrap import bootstrap_weights, holm, one_sided_p, percentile_ci
 from snz.eval.guard import PREREG_TAG
 from snz.eval.matching import match_split
@@ -40,6 +40,7 @@ CONFIRMATORY = {
 }
 ALPHA = 0.05
 COCO_TOLERANCE = 0.001  # 0.1 mAP points (spec §7.1)
+PR_SUBSETS = ("t-clean", "t-shift", "t-texture", "t-night")
 RUN_DIR = re.compile(r"^(BASE|STY|SIN|BOTH)-s(\d+)$")
 
 
@@ -212,6 +213,16 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
     else:
         exploratory["additivity_shift_mAP"] = {"status": "missing arm"}
 
+    # precision-recall curves at IoU 0.5 (spec §7.3): mean over classes, then over seeds
+    pr_curves = {}
+    for s_ in PR_SUBSETS:
+        pr_curves[s_] = {}
+        for a, rs in arm_runs.items():
+            if rs:
+                curves = [np.nanmean(APCalculator(matches[r][s_]).precision()[0], axis=1)
+                          for r in rs]
+                pr_curves[s_][a] = [float(x) for x in np.mean(curves, axis=0)]
+
     classes = matches["BASE-s0"]["t-clean"].classes
     arms = {}
     for a, rs in arm_runs.items():
@@ -273,4 +284,6 @@ def analyze(runs_root: Path, val_labels: Path, manifests_dir: Path, n_boot: int 
         "exploratory": exploratory,
         "arms": arms,
         "t_corrupt": t_corrupt,
+        "pr_curves": pr_curves,
+        "pr_recall": [float(x) for x in RECALL_POINTS],
     }

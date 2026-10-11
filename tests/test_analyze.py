@@ -136,6 +136,7 @@ def test_report_and_cli(tmp_path):
                  "--no-guard"]) == 0
     assert json.loads((out / "analysis.json").read_text())["n_boot"] == 20
     assert "# Results" in (out / "report.md").read_text()
+    assert (out / "figures" / "pr_curves.pdf").exists()
 
 
 def test_corrupt_section_relative_performance(tmp_path):
@@ -180,3 +181,18 @@ def test_pycocotools_cross_check(tmp_path):
     (ev / "val-all.metrics.json").write_text(json.dumps({"mAP": 0.123}))
     r = analyze(tmp_path / "runs", labels, manifests, n_boot=5, seed=0, seeds=(0, 1))
     assert r["coco_check"]["BASE-s0"]["val-all"]["agrees"] is False
+
+
+def test_pr_curves_and_figures(tmp_path):
+    from snz.eval.figures import make_figures
+
+    frames, labels, manifests = _val(tmp_path)
+    _runs(tmp_path, frames, skip={("BOTH", 0), ("BOTH", 1)})
+    r = analyze(tmp_path / "runs", labels, manifests, n_boot=10, seed=0, seeds=(0, 1))
+    pr = r["pr_curves"]
+    assert set(pr["t-shift"]) == {"BASE", "STY", "SIN"}  # arm means; BOTH missing
+    assert len(pr["t-shift"]["STY"]) == 101 and len(r["pr_recall"]) == 101
+    files = make_figures(r, tmp_path / "fig")
+    assert sorted(f.name for f in files) == ["pr_curves.pdf", "pr_curves.png",
+                                             "subset_diffs.pdf", "subset_diffs.png"]
+    assert all(f.stat().st_size > 1000 for f in files)
