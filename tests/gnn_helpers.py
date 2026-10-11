@@ -63,3 +63,35 @@ def squares_and_circles(n=200, seed=0):
     o = outline_set_for("a.jpg", boxes=boxes)
     o.contour = np.asarray(contours, np.float32)
     return o, np.asarray(targets, np.int64)
+
+
+def tiny_idval(tmp_path, n_images=8):
+    """id-val-like fixture: images, labels JSON, manifest, and an outlines npz."""
+    import json
+
+    from helpers import write_image
+    from snz.data.manifest import write_manifest
+    from snz.gnn.outlines import extract_outlines, save_outlines
+
+    imgs = tmp_path / "imgs"
+    frames, recs = [], []
+    rng = np.random.default_rng(0)
+    for i in range(n_images):
+        name = f"f{i}.jpg"
+        write_image(imgs / name, size=(128, 96), color=(40 + 20 * i, 90, 120))
+        gt = [("car", 10, 10, 50, 40), ("pedestrian", 70, 20, 85, 70)]
+        frames.append({"name": name, "attributes": {"weather": "clear", "timeofday": "daytime"},
+                       "labels": [{"id": str(k), "category": c,
+                                   "box2d": {"x1": x1, "y1": y1, "x2": x2, "y2": y2}}
+                                  for k, (c, x1, y1, x2, y2) in enumerate(gt)]})
+        boxes = [[10, 10, 50, 40], [70, 20, 85, 70], [90, 60, 120, 90], [5, 60, 30, 85]]
+        recs.append({"name": name, "boxes": boxes,
+                     "labels": ["car", "pedestrian", "car", "truck"],
+                     "scores": [float(x) for x in rng.uniform(0.1, 0.95, 4)]})
+    labels = tmp_path / "det_train.json"
+    labels.write_text(json.dumps(frames))
+    manifest = tmp_path / "manifests" / "id-val.csv"
+    write_manifest(manifest, [(f["name"], "h") for f in frames])
+    outlines = tmp_path / "id-val.npz"
+    save_outlines(outlines, extract_outlines(recs, imgs, FakeSegmenter()))
+    return imgs, labels, manifest, outlines

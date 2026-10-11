@@ -35,6 +35,13 @@ case "${1:-}" in
       --stylized-copy 1
     outline_split val-all "$B/val-all.detections.jsonl" "$D/bdd100k/images/100k/val"
     ;;
+  train)
+    # priority order (spec §3): GNN (G1, G2) -> RGB (G3) -> GNN-SHAPE -> GNN-COLOR
+    [ -f "$G/models/gnn-train.json" ] && grep -q '"GNN-COLOR.pt"' "$G/models/gnn-train.json" ||
+      uv run snz gnn-train --outlines "$G/outlines/id-val.npz" --labels "$L/det_train.json" \
+        --manifest manifests/id-val.csv --images "$D/bdd100k/images/100k/train" \
+        --out "$G/models" --arms "${SNZ_GNN_ARMS:-GNN,RGB,GNN-SHAPE,GNN-COLOR}" --fold-dir manifests
+    ;;
   *)
     echo "usage: $0 outlines|train|rescore|analyze" >&2; exit 2 ;;
 esac

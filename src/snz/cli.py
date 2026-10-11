@@ -152,6 +152,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", type=Path, required=True)
     p.set_defaults(func=_cmd_gnn_merge_outlines)
 
+    p = commands.add_parser("gnn-train", help="GNN stage: train networks (fold A), fusion (B)")
+    p.add_argument("--outlines", type=Path, required=True, help="id-val.npz")
+    p.add_argument("--labels", type=Path, required=True, help="det_train.json")
+    p.add_argument("--manifest", type=Path, default=Path("manifests/id-val.csv"))
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--arms", default="GNN,RGB,GNN-SHAPE,GNN-COLOR")
+    p.add_argument("--device", default="cuda")
+    p.add_argument("--fold-dir", type=Path, default=Path("manifests"))
+    p.add_argument("--no-pretrained", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_train)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -452,6 +464,16 @@ def _cmd_gnn_merge_outlines(args) -> int:
     save_outlines(args.out, o)
     print(json.dumps({"images": len(o.names), "outlines": len(o.score),
                       "ok_rate": float(o.ok.mean()) if len(o.ok) else None}))
+    return 0
+
+
+def _cmd_gnn_train(args) -> int:
+    from snz.gnn.train import train_arms
+
+    summary = train_arms(args.outlines, args.labels, args.manifest, args.images, args.out,
+                         [a for a in args.arms.split(",") if a], args.device, args.fold_dir,
+                         pretrained=not args.no_pretrained)
+    print(json.dumps({k: summary[k] for k in ("counts", "fold_b_auroc")}, indent=2))
     return 0
 
 
