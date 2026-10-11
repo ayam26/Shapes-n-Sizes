@@ -85,6 +85,12 @@ def test_g7_cli_end_to_end(tmp_path):
         {"footage_thresholds": {"BASE-s0": {"threshold": 0.0, "recall": 0.5, "flagged": False}}}))
     assert main(predict_args) == 0
     assert (run / "eval" / "footage.detections.jsonl").exists()
+    # the tiny CPU model may detect nothing; give the audit steps known detections
+    from snz.eval.predict import write_detections
+
+    write_detections(run / "eval" / "footage.detections.jsonl", [
+        {"name": f"d1_{i:08d}ms.jpg", "boxes": [[2, 2, 30, 30], [5, 5, 20, 40]],
+         "labels": ["car", "pedestrian"], "scores": [0.9, 0.7]} for i in range(3)])
     assert main(["audit-sample", "--runs", str(tmp_path / "runs"), "--analysis", str(analysis),
                  "--frames", str(tmp_path / "foot" / "frames"), "--out", str(tmp_path / "page"),
                  "--key", str(tmp_path / "key.json"), "--n", "5"]) == 0

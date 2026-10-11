@@ -2,13 +2,16 @@
   "counts": {
     "id-val": 1248,
     "t-clean": 1764,
+    "t-dusk": 778,
     "t-fog": 5,
     "t-night": 3929,
+    "t-overcast": 1038,
     "t-rain": 396,
     "t-snow": 422,
-    "train": 11229
+    "train": 11229,
+    "val-all": 10000
   },
-  "dropped_duplicates": 0,
+  "dropped_duplicates": 1,
   "idval_fraction": 0.1,
   "labels": {
     "train": {

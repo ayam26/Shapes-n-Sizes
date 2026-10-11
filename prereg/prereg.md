@@ -1,8 +1,8 @@
 # Preregistration — Shape-biased road-object detection
 
-**Status:** DRAFT. This document becomes binding when it is committed and tagged `prereg-v1`
-(gate G4). No test split has been evaluated before that tag; `snz evaluate` refuses test
-splits until the tag exists.
+**Status:** FROZEN at git tag `prereg-v1` (gate G4, 2026-10-11). No test split had been
+evaluated before this tag: `snz evaluate` refuses every split except train / id-val until the
+tag exists, and only id-val was evaluated, for the G3 pilot (`results/pilot/`).
 
 - Design spec: `docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md`
 - Code: this repository at the tagged commit (`src/snz`), analysis in `src/snz/eval/analyze.py`
@@ -28,16 +28,19 @@ Detector: torchvision Faster R-CNN ResNet-50 + FPN, freshly initialized FPN/RPN/
 (no COCO weights), frozen batch norm, 3 trainable backbone stages, bf16. Every arm uses the
 identical recipe and number of iterations; the **final checkpoint** is evaluated (no selection).
 
-Frozen recipe (`configs/recipe.toml`, recipe sha256 `<FILLED AT G4>`):
+Frozen recipe (`configs/recipe.toml`, recipe sha256
+`71248101b500052b140fee8814d049662af72a6111db2d9421acc974761854f2`), chosen by the G3 pilot
+(BASE seed 0, 6,000 iterations, id-val mAP 24.5 at lr 0.01 vs. 25.9 at lr 0.02; 1.19 it/s):
 
 | Item | Value |
 |---|---|
-| batch size | `<G3>` |
-| learning rate (SGD, momentum 0.9, wd 1e-4) | `<G3>` |
-| iterations | `<G3>` |
-| warmup / LR steps | 1000 iterations / `<G3>` |
-| scale jitter (short side) | `<G3>`; evaluation at 720 (native 1280×720) |
+| batch size | 8 |
+| learning rate (SGD, momentum 0.9, wd 1e-4) | 0.02 |
+| iterations | 18,000 (~12.8 epochs) |
+| warmup / LR steps | 1,000 iterations linear warmup / ×0.1 at 12,060 and 16,020 |
+| scale jitter (short side) | {576, 608, 640, 672, 704, 720}; evaluation at 720 (native 1280×720) |
 | horizontal flip | p = 0.5 |
+| precision | bf16 autocast; final checkpoint evaluated |
 
 Stylization: AdaIN (pretrained `vgg_normalised.pth` / `decoder.pth`, α = 1.0); style images
 from the Describable Textures Dataset (5,640), split 80/20 with seed 0 into training styles and
@@ -70,10 +73,20 @@ name and by hash; 0 cross-split duplicates found):
 | T-fog | BDD val | daytime ∧ foggy | 5 |
 | T-shift (pooled) | union of night/rain/snow/fog | | 4,752 |
 | T-texture | T-clean, stylized with held-out styles | | 1,764 |
-| t-dusk, t-overcast (descriptive) | BDD val | dawn/dusk; daytime ∧ overcast | `<G4>` |
+| t-dusk (descriptive) | BDD val | dawn/dusk (any weather) | 778 |
+| t-overcast (descriptive) | BDD val | daytime ∧ overcast | 1,038 |
 | val-all | all BDD val (footage operating point) | | 10,000 |
 
-T-fog has 5 images and is reported descriptively only. Training and id-val use only
+T-fog has 5 images and is reported descriptively only. One t-overcast image was
+byte-identical to a t-rain image under another name; it was dropped from t-overcast
+(`manifests/dropped_duplicates.csv`).
+
+Manifest SHA-256 (first 16 hex): train `86b0fe420cb91c41`, id-val `0c8536f52b8eed9e`,
+t-clean `615ee70f2395dde6`, t-night `999b57caec98c625`, t-rain `9fd175dcdc476ab5`,
+t-snow `d47e5bcab7e12e68`, t-fog `3bdcc1133c65b4b6`, t-dusk `6ea405342a15d9e5`,
+t-overcast `93e7c0d17e08ff68`, val-all `7141fbb5460338d3`, styles_train `9013f9468ec8c06c`,
+styles_test `ac07114010a4561f`, stylized_train `d19281eeafc08d0d`,
+stylized_t-texture `3c4957a7f5417eb2`. Training and id-val use only
 daytime ∧ clear images; id-val is the only data used to choose the recipe (G3).
 
 ## 4. Hypotheses (confirmatory family, Holm-corrected, α = 0.05)
@@ -157,3 +170,5 @@ Command: `snz analyze` (see `docs/runbook.md`, G6).
 | 2026-10-11 | 2018 BDD detection labels instead of det_20 | official servers offline; det_20 unobtainable |
 | 2026-10-11 | false-detection residual type "near another class" | the spec's four types leave this case unclassified |
 | 2026-10-11 | T-corrupt reduced to 300 images, severities 1/3/5, seed-0 runs | compute; exploratory only |
+| 2026-10-11 | schedule 18,000 iterations (spec placeholder 27,000) | measured 1.19 it/s; 12 runs in ~2.1 GX10-days (spec §5.4) |
+| 2026-10-11 | t-overcast drops 1 image identical to a t-rain image | content-hash disjointness |
