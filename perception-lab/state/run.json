@@ -2,8 +2,8 @@
   "schema_version": 1,
   "started_at": "2026-10-11T05:17:24Z",
   "deadline_at": "2026-10-11T15:17:24Z",
-  "status": "running",
-  "phase": "verification_packaging",
+  "status": "mvp_complete",
+  "phase": "optional_extensions",
   "hardware_verified": true,
   "provider_mode": "ollama-local-verified",
   "model_config_hash": null,
@@ -22,11 +22,12 @@
     "UI: three-column comparison + metrics + gallery; ui_smoke saw capturing->uploading->queued->running->completed (7.0s); screenshots in artifacts/screenshots",
     "offline guard: backend restarted with PL_OFFLINE_GUARD=1; probe to 1.1.1.1:443 blocked; fresh held-out run run-20261011T055348-945d 4/4 live ok",
     "verify_artifacts: 52/52 pass; scene-checks 60/60",
-    "heldout-repeat-v1 run-20261011T055535-5969 (test-retest, uncached): baseline 6/18, structure 8/18; label agreement with heldout-v1 35/36 (core-019 structure flipped)"
+    "heldout-repeat-v1 run-20261011T055535-5969 (test-retest, uncached): baseline 6/18, structure 8/18; label agreement with heldout-v1 35/36 (core-019 structure flipped)",
+    "packaging: start.sh (verified), README, report.md (generated), demo-script.md, source-register.jsonl (7 sources + asset), ui_smoke on :8765"
   ],
   "active_jobs": [],
   "blockers": [],
-  "next_action": "start.sh, README, report.md, demo-script.md, source register",
+  "next_action": "Optional: bounded exploratory second-model comparison; otherwise idle until handoff",
   "prompts_sha256": "12c05bcabcf1a51883502792b59f6b9fcf7c9e8c5ec2cc156dcf251388430995",
   "model_lock_sha256": "de2f1d078512198a3d9f9d818d60c12d2bb51f606055b3ff504e841013b48e30"
 }
