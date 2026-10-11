@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Shape-biased road-object detector study (Shapes-n-Sizes)"
 requires-python = ">=3.12"
 dependencies = [
+  "av>=14",
   "numpy>=1.26",
   "pillow>=10",
   "pycocotools>=2.0.8",

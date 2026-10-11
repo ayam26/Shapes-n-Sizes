@@ -70,6 +70,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--device", default="cuda")
     p.set_defaults(func=_cmd_evaluate)
 
+    p = commands.add_parser("footage-sample", help="G7: unfiltered frames from dashcam drives")
+    p.add_argument("--drives", type=Path, required=True,
+                   help="CSV: drive_id,file,time_of_day,weather (file relative to the CSV)")
+    p.add_argument("--out", type=Path, required=True, help="private dir (never in git)")
+    p.add_argument("--min-frames", type=int, default=2000)
+    p.set_defaults(func=_cmd_footage_sample)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -193,6 +200,14 @@ def _cmd_evaluate(args) -> int:
                "min_size": recipe.min_sizes[-1], **evaluate(frames, records)}
     (args.out / f"{args.split}.metrics.json").write_text(json.dumps(metrics, indent=2))
     print(json.dumps({k: metrics[k] for k in ("split", "mAP", "AP50")}, indent=2))
+    return 0
+
+
+def _cmd_footage_sample(args) -> int:
+    from snz.data.footage import sample_footage
+
+    args.out.mkdir(parents=True, exist_ok=True)
+    print(json.dumps(sample_footage(args.drives, args.out, args.min_frames), indent=2))
     return 0
 
 
