@@ -41,11 +41,11 @@ const short = (h: string | null | undefined, n = 12) => (h ? h.slice(0, n) : "�
 // ---------- scene controls ----------
 interface Controls {
   target: TargetType; appearance: Appearance; preset: string; azimuth: number; distance: number;
-  lighting: Lighting; occluder: boolean;
+  lighting: Lighting; occluder: boolean; hq: boolean;
 }
 const DEFAULTS: Controls = {
   target: "truck", appearance: "white_livery", preset: "cam_a_ego_lane", azimuth: 9, distance: 22.3,
-  lighting: "day", occluder: false,
+  lighting: "day", occluder: false, hq: false,
 };
 
 function ObserverView({ built }: { built: BuiltScene }) {
@@ -75,6 +75,7 @@ function ObserverView({ built }: { built: BuiltScene }) {
         s.cam.aspect = w / h;
         s.cam.updateProjectionMatrix();
       }
+      s.r.toneMapping = built.scene.userData.hq ? THREE.ACESFilmicToneMapping : THREE.NoToneMapping;
       s.r.render(built.scene, s.cam);
     };
     s.controls.addEventListener("change", render);
@@ -324,6 +325,7 @@ export default function App() {
   const spec = useMemo(() => makeSpec({
     target: ctl.target, appearance: ctl.appearance, camera_preset: ctl.preset,
     camera: { azimuth_deg: ctl.azimuth, distance_m: ctl.distance }, lighting: ctl.lighting, occluder: ctl.occluder,
+    quality: ctl.hq ? "high" : undefined,
   }), [ctl]);
   const built = useMemo(() => buildScene(spec), [spec]);
   useEffect(() => () => built.dispose(), [built]);
@@ -407,6 +409,7 @@ export default function App() {
               <option value="cam_b_oblique">B · oblique (held-out)</option>
               {ctl.preset === "custom" && <option value="custom">custom</option>}</select></label>
             <label className="radio"><input type="checkbox" checked={ctl.occluder} onChange={(e) => setCtl({ ...ctl, occluder: e.target.checked })} /> Hedge occluder</label>
+            <label className="radio"><input type="checkbox" checked={ctl.hq} onChange={(e) => setCtl({ ...ctl, hq: e.target.checked })} /> High-fidelity render (exploratory study)</label>
             <label>Viewing angle {ctl.azimuth}°<input type="range" min={0} max={70} step={1} value={ctl.azimuth}
               onChange={(e) => setCtl({ ...ctl, preset: "custom", azimuth: +e.target.value })} /></label>
             <label>Distance {ctl.distance.toFixed(1)} m<input type="range" min={12} max={40} step={0.5} value={ctl.distance}

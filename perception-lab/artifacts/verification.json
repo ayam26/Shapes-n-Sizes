@@ -1,6 +1,6 @@
 {
-  "verified_at": "2026-10-11T06:12:15.008860+00:00",
-  "passed": 88,
+  "verified_at": "2026-10-11T06:29:46.147906+00:00",
+  "passed": 111,
   "failed": 0,
   "checks": [
     {
@@ -60,6 +60,31 @@
     },
     {
       "check": "depiction texture assets match recorded hashes",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "fidelity manifest hash matches state",
+      "status": "PASS",
+      "detail": "94c307cb03a3cbdc"
+    },
+    {
+      "check": "fidelity cases equal their paired core specs except quality",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "fidelity renders deterministic (double render)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "fidelity markers identical to paired core markers",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "fidelity local renders hash-match server-ingested images",
       "status": "PASS",
       "detail": ""
     },
@@ -442,6 +467,96 @@
       "check": "run-20261011T061009-49b4: held-out prompts equal the frozen prompts file",
       "status": "PASS",
       "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062237-bd2b: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062416-70ab: every result finished",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: image bytes re-hash to recorded sha256 for every result",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: metrics recomputed from records equal exported metrics.json",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: independent recount (label == truth) matches reported counts",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: paired methods received byte-identical inputs",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: all results live local inference (no fixture/cache)",
+      "status": "PASS",
+      "detail": ""
+    },
+    {
+      "check": "run-20261011T062635-4fd4: every result finished",
+      "status": "PASS",
+      "detail": ""
     }
   ],
   "runs": [
@@ -530,6 +645,30 @@
       "run_key": "xmodel-gemma4-heldout-v1",
       "label": "EXPLORATORY cross-model: gemma4, heldout, frozen prompts rev2",
       "records": 36,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T062237-bd2b",
+      "run_key": "fidelity-nemotron-v1",
+      "label": "EXPLORATORY high-fidelity renders: nemotron, frozen prompts rev2",
+      "records": 72,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T062416-70ab",
+      "run_key": "fidelity-qwen3.6-v1",
+      "label": "EXPLORATORY high-fidelity renders: qwen3.6, frozen prompts rev2",
+      "records": 72,
+      "offline_guard": true,
+      "provider_mode": "live"
+    },
+    {
+      "run_id": "run-20261011T062635-4fd4",
+      "run_key": "fidelity-gemma4-v1",
+      "label": "EXPLORATORY high-fidelity renders: gemma4, frozen prompts rev2",
+      "records": 72,
       "offline_guard": true,
       "provider_mode": "live"
     }

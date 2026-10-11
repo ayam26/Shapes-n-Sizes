@@ -114,6 +114,32 @@ def xmodel_paired():
     return "| Model | Split | Both correct | Baseline-only (variant regressions) | Variant-only (repairs) | Neither | Unresolved |\n|---|---|---|---|---|---|---|\n" + "\n".join(out)
 
 
+FID = [("nemotron3:33b", ["dev-v2", "heldout-v1"], "fidelity-nemotron-v1"),
+       ("qwen3.6:35b", ["xmodel-qwen3.6-dev-v1", "xmodel-qwen3.6-heldout-v1"], "fidelity-qwen3.6-v1"),
+       ("gemma4:26b", ["xmodel-gemma4-dev-v1", "xmodel-gemma4-heldout-v1"], "fidelity-gemma4-v1")]
+
+
+def fidelity_table():
+    rows = ["| Model | View | Target (truth) | Method | Standard render correct | High-fidelity correct | Label changed |",
+            "|---|---|---|---|---|---|---|"]
+    totals = []
+    for name, core_keys, fk in FID:
+        core = {(r["case_id"], r["method_id"]): r for k in core_keys for r in runs[k]["recs"]}
+        cells = {}
+        for r in runs[fk]["recs"]:
+            c = core[(r["case_id"].replace("fid-", "core-"), r["method_id"])]
+            cd = cond(r)
+            key = ("ego lane" if cd["camera"] == "cam_a_ego_lane" else "oblique", cd["target"], r["method_id"])
+            t = cells.setdefault(key, [0, 0, 0, 0])
+            t[0] += c["label"] == c["truth"]; t[1] += r["label"] == r["truth"]; t[2] += 1; t[3] += c["label"] != r["label"]
+        changed = sum(v[3] for v in cells.values())
+        totals.append(f"{name}: {changed}/{sum(v[2] for v in cells.values())} labels changed")
+        for (view, tgt, meth), (a_, b_, n_, ch) in sorted(cells.items()):
+            truth = dict(TARGETS)[tgt]
+            rows.append(f"| {name} | {view} | {tgt} (`{truth}`) | {M[meth]} | {a_}/{n_} | {b_}/{n_} | {ch} |")
+    return "\n".join(rows), "; ".join(totals)
+
+
 h1, h2 = runs["heldout-v1"]["recs"], runs["heldout-repeat-v1"]["recs"]
 a = {(r["case_id"], r["method_id"]): r["label"] for r in h1}
 b = {(r["case_id"], r["method_id"]): r["label"] for r in h2}
@@ -203,6 +229,7 @@ This is a **prompt intervention, not a new model**. The model's `visible_evidenc
 | 05:53 | Fresh held-out inference with outbound guard on | `{rid('offline-guard-smoke-v1')}` |
 | 05:55 | Held-out repeat (test–retest only) | `{rid('heldout-repeat-v1')}` |
 | 06:05 | Pre-registered frozen locks for `qwen3.6:35b` and `gemma4:26b` committed (same prompts/options/schema) | – |
+| 06:22–06:27 | Exploratory high-fidelity renders pre-registered (36 paired), then run on all three models | `{rid('fidelity-nemotron-v1')}`, `{rid('fidelity-qwen3.6-v1')}`, `{rid('fidelity-gemma4-v1')}` |
 | 06:06–06:10 | Exploratory cross-model: qwen3.6 dev / held-out, gemma4 dev / held-out | `{rid('xmodel-qwen3.6-dev-v1')}`, `{rid('xmodel-qwen3.6-heldout-v1')}`, `{rid('xmodel-gemma4-dev-v1')}`, `{rid('xmodel-gemma4-heldout-v1')}` |
 
 Development numbers after revision 2 were measured on the data used to choose the revision and are not an unbiased estimate. The held-out split is the headline.
@@ -293,16 +320,36 @@ Observations (single exploratory runs; small samples; no significance claimed):
 - **The structure sentence can hurt.** On qwen3.6 development (ego-lane view, where the depiction has the truck's own perspective), the structure prompt turned 3/6 depictions into `physical_vehicle` (`depiction_as_vehicle`) and 2 more controls into `flat_depiction`: 5 regressions, 0 repairs. It made no held-out difference for qwen3.6 or gemma4, and gemma4 was already at ceiling.
 - **Output format.** qwen3.6 returned some answers inside a single code fence (allowed by the parser without repair; counts in the table). In a red-square smoke test with a vaguer prompt it ignored the schema entirely (a fenced JSON array) — none of those occurred with the frozen task prompt. No model produced invalid outputs or timeouts here.
 
+### 6.8 Exploratory high-fidelity render study (user-approved extension; not the headline)
+
+The 36 core cases were re-rendered with a pre-registered high-fidelity path (`frontend/src/scene/hq.ts`: rounded panels, clear-coat paint,
+corrugated trailer, wheel rims, fuel tanks, procedural road/grass/bark/window textures, sky environment map, ACES tone mapping, soft
+shadows, 2× supersampling). Geometry extents, placement, cameras, lighting directions, seed and marker are identical; `fid-NNN` pairs with
+`core-NNN`. The 36 renders were deterministic and committed before any model saw them. Each model ran once per method with its frozen lock;
+results are compared with the same model's standard-render runs on the paired case.
+
+{fidelity_table()[0]}
+
+Labels changed between standard and high-fidelity renders — {fidelity_table()[1]}.
+
+- **Higher fidelity did not fix nemotron3's oblique-truck failure** (baseline 0/6 → 0/6; structure prompt 1/6 → 2/6, within the run-to-run variation of §6.4).
+  Its stated evidence shifted from "2D graphic" to e.g. "a 2D computer-generated image with simplified shapes", which suggests it treats
+  *the image being synthetic* as evidence of a depiction. A still-synthetic render cannot separate that from the viewpoint effect; real photographs would be needed.
+  From the ego-lane view, nemotron3 gave identical labels on every case at both fidelity levels.
+- gemma4's one oblique-truck abstention became correct (5/6 → 6/6, both methods); qwen3.6's oblique plain-board accuracy rose from 1/6 to 3/6 (both methods).
+- No model produced a false `physical_vehicle` label on any high-fidelity depiction under the baseline; qwen3.6's structure-prompt `depiction_as_vehicle` errors from the ego-lane view recurred (3/6, same as standard).
+
 ## 7. What this does and does not show
 
 - It shows a working, reproducible local testbed: deterministic scenes, exact model inputs with hashes, ground truth kept out of the request, frozen prompts, a full pass/fail ledger, and recomputable metrics.
 - On this synthetic corpus, `{lock['model_id']}` (a) separated truck from truck-picture from the ego-lane view, (b) labelled the physical truck `flat_depiction` from the oblique view, and (c) never used `other` for a plain board.
 - The exploratory comparison shows these are not properties of the images alone: on the same inputs, gemma4 got 17/18 held-out (both methods) and qwen3.6 13/18. Which local model is chosen matters more here than the prompt sentence.
+- More realistic (but still synthetic) rendering did not change nemotron3's oblique-truck answers (§6.8). Whether it would behave differently on real photographs is untested.
 - It does **not** show a vulnerability in any vehicle, a robustness improvement from the structure prompt, a texture or shape bias in the usual sense, or anything about real-world safety. Samples are small (18 per split per method); no statistical significance is claimed.
 
 ## 8. Limitations
 
-1. **Rendering-style confound (partly addressed).** Low-poly, flat-shaded geometry may read as "a drawing". Two other models recognised the same trucks, so it does not explain nemotron3's oblique failures on its own, but it is not ruled out as a contributing factor.
+1. **Synthetic-image confound (partly addressed).** Two other models recognised the same trucks, and a higher-fidelity re-render left nemotron3's oblique failures unchanged, so low-poly shading is not the explanation. nemotron3's evidence ("computer-generated image") suggests it may treat synthetic imagery itself as a depiction cue; only real photographs can test that.
 2. Splits differ by viewpoint, so development and held-out are different difficulty regimes; numbers must not be pooled.
 3. Development results after revision 2 are post-tuning.
 4. The marker spans the target slot; in the oblique view it is wide and includes trees and the empty space where the truck would stand. It is identical across target types, but how much of it the target fills differs by target, which a model could in principle use.
@@ -334,11 +381,11 @@ Observations (single exploratory runs; small samples; no significance claimed):
 | Fresh local-only smoke test | ✓ §6.5 (application-level guard) |
 | Documented startup | ✓ `scripts/start.sh`, README |
 
-Not done / out of scope: edge-image and second-view variants (optional), independent observability review, real images. A second and third model were run as an exploratory extension (§6.7).
+Not done / out of scope: edge-image and second-view variants (optional), independent observability review, real images. Exploratory extensions done: a second and third model (§6.7) and a high-fidelity re-render (§6.8).
 
 ## 11. Next steps
 
-1. Re-render with higher-fidelity materials (PBR textures, ambient occlusion) to test the rendering-style confound directly.
+1. Test with real photographs (a toy truck vs a printed photo of it on a board, shot from both viewpoints) to separate "synthetic image" from "depiction" for nemotron3.
 2. Pre-register a cross-model held-out comparison with a fresh held-out set (the §6.7 runs reused a split already seen), and repeat each model ≥5 times.
 3. Independent observability review of held-out images before inference.
 4. ≥5 repeat runs per configuration to estimate label stability.

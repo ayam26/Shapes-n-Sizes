@@ -76,6 +76,24 @@ for e in log["cases"]:
             tex_bad.append(e["case_id"])
 check("depiction texture assets match recorded hashes", not tex_bad, ",".join(tex_bad))
 
+# --- exploratory high-fidelity study (pre-registered paired renders) ---
+fid_path = ROOT / "experiments/manifest-fidelity.json"
+if fid_path.exists():
+    fid_bytes = fid_path.read_bytes()
+    fid = json.loads(fid_bytes)
+    check("fidelity manifest hash matches state", sha(fid_bytes) == state.get("fidelity_manifest_hash"), sha(fid_bytes)[:16])
+    pairs_ok = all(c["pair_of"] == c["case_id"].replace("fid-", "core-") and c["spec"].get("quality") == "high" and
+                   {k: v for k, v in c["spec"].items() if k not in ("quality", "conditions")} ==
+                   {k: v for k, v in spec_of[c["pair_of"]].items() if k not in ("quality", "conditions")} for c in fid["cases"])
+    check("fidelity cases equal their paired core specs except quality", pairs_ok and len(fid["cases"]) == 36)
+    flog = {e["case_id"]: e for e in json.loads((ROOT / "experiments/render-log-fidelity.json").read_text())["cases"]}
+    check("fidelity renders deterministic (double render)", len(flog) == 36 and all(e.get("deterministic") for e in flog.values()))
+    check("fidelity markers identical to paired core markers",
+          all(flog[c["case_id"]]["marker"] == by_id[c["pair_of"]]["marker"] for c in fid["cases"]))
+    fbad = [c["case_id"] for c in fid["cases"] if sha(strip_and_validate((ROOT / "data/renders" / f"{c['case_id']}.png").read_bytes(), 2048)[0])
+            != flog[c["case_id"]]["server"]["image_sha256"]]
+    check("fidelity local renders hash-match server-ingested images", not fbad, ",".join(fbad))
+
 # --- run bundles ---
 runs_summary = []
 for z in sorted((ROOT / "data/results").glob("run-*.zip")):

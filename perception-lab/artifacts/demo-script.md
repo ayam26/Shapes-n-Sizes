@@ -40,6 +40,8 @@ It's an image-classification probe, not a driving system."
 - Results → run **xmodel-gemma4-heldout-v1**: "Same images, same frozen prompts, different local model: gemma4 gets 17/18 and recognises
   the oblique trucks. So this failure belongs to nemotron3, not to the picture — and model choice mattered more than our prompt
   trick, which actually caused 5 regressions on qwen3.6." (Exploratory, single runs.)
+- Tick **High-fidelity render**, keep Physical truck + B · oblique, Analyze: "We re-rendered everything with textures, reflections and
+  soft shadows. gemma4 and qwen3.6 get these trucks right; nemotron3 still says flat_depiction — now 'a computer-generated image'."
 - Latency: ≈1.2 s baseline, ≈1.4 s with the longer prompt, per request, warm.
 - Limits (one breath): synthetic low-poly scenes may themselves look like drawings; 18 cases per split; one headline model plus two exploratory single-run comparisons; no safety
   claims. "Everything — images, hashes, prompts, raw outputs, metrics — is exported and re-verified by a script."

@@ -40,6 +40,8 @@ variation (repeat run: 35/36 labels identical).
 Exploratory cross-model check on the same images and frozen prompts (pre-registered lock files): held-out correct/attempted
 `gemma4:26b` **17/18** (both methods), `qwen3.6:35b` **13/18** (both). The oblique-truck failure is specific to nemotron3; the
 plain-board → `flat_depiction` failure also appears for qwen3.6; the structure sentence caused 5 regressions for qwen3.6 on development.
+A pre-registered high-fidelity re-render of all 36 core cases (textures, reflections, tone mapping, soft shadows) left nemotron3's
+oblique-truck answers unchanged (0/6 baseline) — it now calls the truck "a 2D computer-generated image"; real photos are the next test.
 Full analysis, limitations and every number: **[artifacts/report.md](artifacts/report.md)**.
 
 ## Reproduce
