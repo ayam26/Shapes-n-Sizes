@@ -3,7 +3,7 @@
 - **Date:** 2026-10-11
 - **Status:** design approved in conversation; awaiting review of this written spec
 - **Supersedes:** an earlier VLM depiction-cue design and the hackathon Perception Lab spec (both removed; see git history)
-- **Pilot work:** `perception-lab/` (hackathon VLM testbed and results), cited as pilot evidence
+- **Pilot work:** the Perception Lab hackathon VLM testbed and results, cited as pilot evidence (removed from the repo on 2026-10-11; [archived](https://github.com/ayam26/shapes-n-sizes/tree/2ff5ef97a36c1c517ec197d2b3c625a100029952/perception-lab))
 - **Deliverable:** an arXiv / workshop-style paper with code, split manifests, preregistration, and result summaries
 
 ## 1. Summary

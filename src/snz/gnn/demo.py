@@ -1,4 +1,4 @@
-"""Demo rendering for the GNN shape verifier (demos 1-5 of docs/presentation.md).
+"""Demo rendering for the GNN shape verifier.
 
 - Gallery: side-by-side BASE | GNN | RGB panels for night/weather images, drawn from the
   committed re-scored detections. Each arm is shown at its T-shift equal-recall threshold

@@ -168,7 +168,7 @@ Accident datasets are useful stress tests but over-represent rare events.
 | Geirhos cue-conflict stimuli | Shape of one class + texture of another; the standard shape-bias test. Also in TensorFlow Datasets (`geirhos_conflict_stimuli`) | CC BY 4.0 (per a third-party paper) | 🔶 |
 | [model-vs-human](https://github.com/bethgelab/model-vs-human) | 17 out-of-distribution datasets (cue-conflict, silhouettes, edges, stylized…) with human data | Check repo | 🔶 |
 | [Stylized-ImageNet code](https://github.com/rgeirhos/Stylized-ImageNet) | Recipe for stylized images with AdaIN | See repo | 🔶 |
-| `perception-lab/` renders | Our matched real-vs-picture truck scenes | Self-created | ✅ |
+| Perception Lab renders ([archived](https://github.com/ayam26/shapes-n-sizes/tree/2ff5ef97a36c1c517ec197d2b3c625a100029952/perception-lab), removed from the repo) | Our matched real-vs-picture truck scenes | Self-created | ✅ |
 
 ### 5.7 Testing the GX10's vision-language models (Nemotron etc.)
 
@@ -185,7 +185,7 @@ Suggested first VLM tests: (1) POPE subset as a general hallucination baseline; 
 
 ## 6. Hardware and models on the GX10
 
-From [`perception-lab/artifacts/environment.md`](perception-lab/artifacts/environment.md): Ubuntu 24.04 aarch64, 20 Arm cores, NVIDIA GB10 (CUDA 13.0), 121 GiB unified memory, 916 GB disk (≈613 GB free). Ollama models:
+From the Perception Lab environment notes ([archived copy](https://github.com/ayam26/shapes-n-sizes/blob/2ff5ef97a36c1c517ec197d2b3c625a100029952/perception-lab/artifacts/environment.md)): Ubuntu 24.04 aarch64, 20 Arm cores, NVIDIA GB10 (CUDA 13.0), 121 GiB unified memory, 916 GB disk (≈613 GB free). Ollama models:
 
 | Model | Size / quant | Vision |
 |---|---|---|
@@ -194,7 +194,7 @@ From [`perception-lab/artifacts/environment.md`](perception-lab/artifacts/enviro
 | `gemma4:26b` | 26B, Q4_K_M | ✅ |
 | `nemotron-3-super` | 124B, Q4_K_M | ❌ text only |
 
-Pilot evidence from the hackathon build in `perception-lab/`: on its held-out set, `nemotron3:33b` labeled all 6 real trucks as flat pictures (6/18 correct), `qwen3.6` scored 13/18, `gemma4` 17/18 ([report](perception-lab/artifacts/report.md)).
+Pilot evidence from the earlier hackathon build (Perception Lab, since removed from the repo): on its held-out set, `nemotron3:33b` labeled all 6 real trucks as flat pictures (6/18 correct), `qwen3.6` scored 13/18, `gemma4` 17/18 ([archived report](https://github.com/ayam26/shapes-n-sizes/blob/2ff5ef97a36c1c517ec197d2b3c625a100029952/perception-lab/artifacts/report.md)).
 
 Detector training uses PyTorch + torchvision on the GB10 (first step: a smoke test; NVIDIA PyTorch containers as fallback).
 
@@ -229,7 +229,6 @@ scripts/                     GX10 setup and download scripts
 manifests/                   split manifests (image names + SHA-256), written at G2
 results/                     small result summaries (g1_smoke.json, pilot metrics, ...)
 tests/                       pytest suite (CPU, synthetic fixtures)
-perception-lab/              hackathon VLM testbed and results (pilot evidence)
 # planned (Plans 2–3): src/snz/eval analysis (bootstrap, operating points), src/snz/audit, prereg/
 ```
 

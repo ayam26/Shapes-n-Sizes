@@ -143,7 +143,7 @@ scripts/run_gnn.sh analyze    # results/gnn/analysis.json + report.md
 
 Fallback segmenter: `SNZ_SEGMENTER=grabcut scripts/run_gnn.sh outlines`.
 
-## Demo (GX10; see `docs/presentation.md` §5)
+## Demo (GX10)
 
 Outputs go to `demo/` (git-ignored: they contain BDD100K frames). View them on a laptop with an
 SSH tunnel: on the GX10 `python3 -m http.server 8000 --directory demo`, on the laptop

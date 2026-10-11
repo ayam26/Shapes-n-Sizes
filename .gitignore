@@ -4,8 +4,6 @@ __pycache__/
 *.pyc
 .venv/
 .DS_Store
-perception-lab/data/perception.sqlite*
-perception-lab/state/lock*
 # snz: data, weights, and run outputs never go in git
 /data/
 /runs/
