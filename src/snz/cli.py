@@ -165,7 +165,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=_cmd_gnn_train)
 
     p = commands.add_parser("gnn-rescore", help="GNN stage: re-score BASE-s0 detections per arm")
-    p.add_argument("--split", required=True, choices=["id-val", "val-all", "t-texture"])
+    p.add_argument("--split", required=True,
+                   choices=["id-val", "val-all", "t-texture", "footage"])
     p.add_argument("--outlines", type=Path, required=True)
     p.add_argument("--models", type=Path, required=True)
     p.add_argument("--images", type=Path, required=True)
@@ -184,6 +185,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--bootstrap", type=int, default=2000)
     p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=_cmd_gnn_analyze)
+
+    p = commands.add_parser("gnn-footage-thresholds",
+                            help="footage thresholds per GNN arm (full-val equal recall)")
+    p.add_argument("--runs", type=Path, required=True)
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(func=_cmd_gnn_footage_thresholds)
 
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
@@ -347,7 +356,7 @@ def _seed0_footage(runs: Path, analysis: Path) -> tuple[dict, dict]:
 
     thresholds = json.loads(analysis.read_text())["footage_thresholds"]
     dets, th = {}, {}
-    for arm in ("BASE", "STY", "SIN", "BOTH"):
+    for arm in (k.removesuffix("-s0") for k in thresholds if k.endswith("-s0")):
         f = runs / f"{arm}-s0" / "eval" / "footage.detections.jsonl"
         if f.exists():
             dets[arm] = read_detections(f)
@@ -545,6 +554,19 @@ def _cmd_gnn_analyze(args) -> int:
     (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
     (args.out / "report.md").write_text(render_gnn_report(result))
     print((args.out / "report.md").read_text())
+    return 0
+
+
+def _cmd_gnn_footage_thresholds(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.analyze import footage_thresholds
+
+    ensure_split_allowed("val-all", tag=GNN_PREREG_TAG)
+    result = footage_thresholds(args.runs, args.labels, args.manifests)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2))
     return 0
 
 

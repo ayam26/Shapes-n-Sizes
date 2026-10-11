@@ -189,3 +189,18 @@ def render_gnn_report(r: dict) -> str:
     prov = r.get("provenance", {})
     L += ["", f"Code: {prov.get('git_commit', '?')}."]
     return "\n".join(L) + "\n"
+
+
+def footage_thresholds(runs_root: Path, val_labels: Path, manifests_dir: Path) -> dict:
+    """Per arm, the threshold reaching BASE-s0's full-val recall at score >= 0.5 (spec §6)."""
+    runs_root = Path(runs_root)
+    names = [n for n, _ in read_manifest(Path(manifests_dir) / "val-all.csv")]
+    frames = select_frames(load_frames(val_labels)[0], names)
+    arms = [p.name for p in sorted(runs_root.iterdir())
+            if RUN.match(p.name) and (p / "eval" / "val-all.detections.jsonl").exists()]
+    m = {a: match_split(frames, read_detections(runs_root / a / "eval" /
+                                                "val-all.detections.jsonl")) for a in arms}
+    r_val = recall_at(m["BASE-s0"], 0.5)
+    return {"R_star_val": r_val,
+            "footage_thresholds": {a: vars(RecallCurve(mm).threshold(r_val))
+                                   for a, mm in m.items()}}

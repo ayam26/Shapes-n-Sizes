@@ -71,3 +71,25 @@ def test_gnn_report(tmp_path):
     md = render_gnn_report(gnn_analyze(runs, labels, manifests, n_boot=30))
     for text in ("G1", "G2", "G3", "Holm", "R*", "F*", "t-shift", "invented"):
         assert text in md
+
+
+def test_footage_thresholds_and_gnn_arm_audit(tmp_path):
+    from helpers import write_image
+    from snz.cli import main
+    from snz.gnn.analyze import footage_thresholds
+
+    runs, labels, manifests = _planted(tmp_path)
+    th = footage_thresholds(runs, labels, manifests)
+    assert set(th["footage_thresholds"]) == {"BASE-s0", "GNN-s0"} and th["R_star_val"] > 0
+    analysis = tmp_path / "th.json"
+    analysis.write_text(json.dumps(th))
+    for arm in ("BASE", "GNN"):
+        write_detections(runs / f"{arm}-s0" / "eval" / "footage.detections.jsonl",
+                         [{"name": "f.jpg", "boxes": [[1, 1, 20, 20]], "labels": ["car"],
+                           "scores": [0.99]}])
+    write_image(tmp_path / "frames" / "f.jpg", size=(64, 48))
+    assert main(["audit-sample", "--runs", str(runs), "--analysis", str(analysis),
+                 "--frames", str(tmp_path / "frames"), "--out", str(tmp_path / "page"),
+                 "--key", str(tmp_path / "key.json"), "--n", "5"]) == 0
+    key = json.loads((tmp_path / "key.json").read_text())
+    assert {v["arm"] for v in key.values()} == {"BASE", "GNN"}
