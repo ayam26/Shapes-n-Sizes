@@ -3,7 +3,7 @@
   "started_at": "2026-10-11T05:17:24Z",
   "deadline_at": "2026-10-11T15:17:24Z",
   "status": "running",
-  "phase": "heldout_run",
+  "phase": "ui_build",
   "hardware_verified": true,
   "provider_mode": "ollama-local-verified",
   "model_config_hash": null,
@@ -16,11 +16,13 @@
     "e2e: run-20261011T054252-99b6 \u2014 4/4 live nemotron3:33b results, ~1.2-1.4s warm",
     "dev-v1 run-20261011T054351-a9b8: baseline 9/18, structure 12/18; all 6 plain-board controls -> flat_depiction (label undefined)",
     "dev-v2 run-20261011T054510-d35c (label definitions added to both prompts): 12/18 both; 6 controls still flat_depiction",
-    "FROZEN prompts rev2 + model lock at 2026-10-11T05:46:21Z (before any held-out output)"
+    "FROZEN prompts rev2 + model lock at 2026-10-11T05:46:21Z (before any held-out output)",
+    "HELD-OUT heldout-v1 run-20261011T054634-4334 (frozen): baseline 6/18, structure 7/18; trucks->flat_depiction 6/6 baseline, 5/6 variant; depictions 6/6 both; controls 0/6 both; paired variant-only 1, baseline-only 0",
+    "DISCOVERY discovery-v1 run-20261011T054740-3c2c (exploratory): 12/24 both; truck correct at angle25/far, flat_depiction at near/occluded"
   ],
   "active_jobs": [],
   "blockers": [],
-  "next_action": "Run held-out split (cam_b_oblique) once with frozen config",
+  "next_action": "Build three-column comparison UI + gallery; then report/verify_artifacts",
   "prompts_sha256": "12c05bcabcf1a51883502792b59f6b9fcf7c9e8c5ec2cc156dcf251388430995",
   "model_lock_sha256": "de2f1d078512198a3d9f9d818d60c12d2bb51f606055b3ff504e841013b48e30"
 }
