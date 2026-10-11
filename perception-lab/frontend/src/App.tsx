@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import {
-  api, CaseDetail, CaseResult, Health, METHOD_LABEL, METHODS, Metrics, RunDetail, RunRow, Summary, Frac,
+  api, CaseDetail, CaseResult, Health, METHOD_LABEL, METHODS, Metrics, ModelsInfo, RunDetail, RunRow, Summary, Frac,
 } from "./api";
 import { BuiltScene, HELPER_LAYER, buildScene } from "./scene/build";
 import { renderSensor } from "./scene/capture";
@@ -149,12 +149,13 @@ function EvidencePanel({ caseId, refresh }: { caseId: string | null; refresh: nu
           {hashes.size === 1 && <> · ✓ both methods received byte-identical input</>}
           {hashes.size > 1 && <span className="error"> · ⚠ methods received different inputs</span>}</p>
       )}
+      <AcrossModels results={c.results} />
       <div className="methods">
-        {METHODS.map((m) => {
+        {[...new Set([...METHODS, ...shown.map((r) => r.method_id)])].map((m) => {
           const r = byMethod[m];
           return (
             <div className="method" key={m}>
-              <h4>{METHOD_LABEL[m]}</h4>
+              <h4>{METHOD_LABEL[m] ?? m}</h4>
               {!r ? <p className="muted small">no result in this run</p> : (
                 <>
                   <div className="row"><StatusChip status={r.status} /> <LabelChip label={r.label} /> <OutcomeChip outcome={r.outcome} /></div>
@@ -165,6 +166,8 @@ function EvidencePanel({ caseId, refresh }: { caseId: string | null; refresh: nu
                   <details><summary>Exact prompt</summary><pre>{run?.model_config.methods[m]?.prompt ?? "(run not loaded)"}</pre>
                     <p className="small muted">prompt sha256 {short(r.prompt_hash, 16)}</p></details>
                   <details><summary>Raw model response</summary><pre>{r.raw_output ?? "(none)"}</pre></details>
+                  {r.provider_meta && JSON.parse(r.provider_meta).thinking && <details><summary>Model reasoning (stated, not verified)</summary>
+                    <pre>{JSON.parse(r.provider_meta).thinking}</pre></details>}
                   <details><summary>Model configuration &amp; timing</summary><pre>{JSON.stringify({
                     model_id: r.model_id, model_digest: r.model_digest, quantization: r.quantization, runtime: r.runtime_version,
                     options: r.options && JSON.parse(r.options), provider_meta: r.provider_meta && JSON.parse(r.provider_meta),
@@ -179,6 +182,25 @@ function EvidencePanel({ caseId, refresh }: { caseId: string | null; refresh: nu
       <details><summary className="small">Scene specification</summary><pre>{JSON.stringify(c.scene_spec, null, 2)}</pre></details>
       <p className="small"><a href={api.imageUrl(c.case_id)} download={`${c.case_id}.png`}>Download exact model input PNG</a></p>
     </div>
+  );
+}
+
+function AcrossModels({ results }: { results: CaseResult[] }) {
+  const latest = new Map<string, CaseResult>();
+  for (const r of results) {  // results are newest first
+    const k = `${r.model_id}|${r.method_id}`;
+    if (!latest.has(k) && r.status !== "queued" && r.status !== "running") latest.set(k, r);
+  }
+  const rows = [...latest.values()];
+  if (new Set(rows.map((r) => r.model_id)).size < 2) return null;
+  return (
+    <div className="tablewrap"><table className="small">
+      <caption className="small muted" style={{ textAlign: "left" }}>Same image across local models (latest result per model × method)</caption>
+      <thead><tr><th>Model</th><th>Method</th><th>Label</th><th>Outcome</th><th>Latency</th></tr></thead>
+      <tbody>{rows.sort((a, b) => (a.model_id ?? "").localeCompare(b.model_id ?? "") || a.method_id.localeCompare(b.method_id)).map((r) => (
+        <tr key={r.result_id}><td>{r.model_id}</td><td>{METHOD_LABEL[r.method_id] ?? r.method_id}</td><td><LabelChip label={r.label} /></td>
+          <td><OutcomeChip outcome={r.outcome} /></td><td>{ms(r.elapsed_ms)}</td></tr>))}</tbody>
+    </table></div>
   );
 }
 
@@ -303,9 +325,14 @@ export default function App() {
   const [runId, setRunId] = useState<string | null>(null);
   const [run, setRun] = useState<RunDetail | null>(null);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [models, setModels] = useState<ModelsInfo | null>(null);
+  const [lockSel, setLockSel] = useState("model-lock.json");
 
   useEffect(() => {
-    const tick = () => api.health().then((h) => { setHealth(h); setHealthErr(null); }).catch((e) => setHealthErr(String(e)));
+    const tick = () => {
+      api.health().then((h) => { setHealth(h); setHealthErr(null); }).catch((e) => setHealthErr(String(e)));
+      api.models().then(setModels).catch(() => undefined);
+    };
     tick();
     const t = setInterval(tick, 10000);
     return () => clearInterval(t);
@@ -337,8 +364,12 @@ export default function App() {
 
   const busy = ["capturing", "uploading", "queued", "running"].includes(analysis.phase);
 
-  async function analyze() {
+  async function analyze(allModels = false) {
     try {
+      const locks = allModels
+        ? (models?.locks ?? []).filter((l) => l.frozen).sort((a, b) => Number(b.headline) - Number(a.headline))
+        : (models?.locks ?? []).filter((l) => l.lock_file === lockSel);
+      if (!locks.length) throw new Error("no frozen model lock available");
       setAnalysis({ phase: "capturing" });
       const canvas = renderSensor(built, spec.resolution);
       const blob = await new Promise<Blob>((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error("capture failed"))), "image/png"));
@@ -347,16 +378,22 @@ export default function App() {
         split: "interactive", family: FAMILY[spec.target], truth: TRUTH[spec.target], scene_seed: spec.seed, scene_spec: spec,
         observability: "unchecked", source_kind: "procedural", license: "self-created", renderer_version: RENDERER_VERSION,
       }, blob);
-      const r = await api.createRun({ case_ids: [c.case_id], method_ids: [...METHODS], label: "interactive analyze" });
-      setAnalysis({ phase: "queued", caseId: c.case_id, runId: r.run_id, sha: c.image_sha256 });
+      const runIds: [string, string][] = [];
+      for (const l of locks) {
+        const r = await api.createRun({ case_ids: [c.case_id], method_ids: [...METHODS], model_lock: l.lock_file,
+          label: `interactive analyze · ${l.model_id}` });
+        runIds.push([l.model_id, r.run_id]);
+      }
+      setAnalysis({ phase: "queued", caseId: c.case_id, runId: runIds[0][1], sha: c.image_sha256 });
       for (;;) {
         await new Promise((res) => setTimeout(res, 400));
-        const d = await api.run(r.run_id);
+        const ds = await Promise.all(runIds.map(([, id]) => api.run(id)));
         const progress: Record<string, string> = {};
-        for (const x of d.results) progress[x.method_id] = x.status;
-        const phase: Phase = d.status === "completed" ? "completed" : d.status === "running" ? "running" : "queued";
-        setAnalysis({ phase, caseId: c.case_id, runId: r.run_id, progress, sha: c.image_sha256 });
-        if (d.status === "completed" || d.status === "cancelled") break;
+        ds.forEach((d, i) => { for (const x of d.results) progress[`${runIds[i][0]} · ${METHOD_LABEL[x.method_id]}`] = x.status; });
+        const done = ds.every((d) => d.status === "completed" || d.status === "cancelled");
+        const phase: Phase = done ? "completed" : ds.some((d) => d.status === "running") ? "running" : "queued";
+        setAnalysis({ phase, caseId: c.case_id, runId: runIds[0][1], progress, sha: c.image_sha256 });
+        if (done) break;
       }
       setCaseId(c.case_id);
       setRefresh((x) => x + 1);
@@ -382,6 +419,8 @@ export default function App() {
             <span className="small">prompts {health.prompts_frozen ? "frozen" : "NOT frozen"} · lock {health.lock_frozen ? "frozen" : "NOT frozen"}</span>
             <span className="small">offline guard {health.offline_guard ? "on" : "off"} · queue {health.queue_depth}</span>
             <span className="small muted">Rendering: this browser (WebGL) · Inference: GX10 (Ollama)</span>
+            {models && <span className="small muted">GX10 unified-memory resident: {models.loaded.filter((m) => m.model).map((m) =>
+              `${m.model} ${((m.size_bytes ?? 0) / 1e9).toFixed(1)} GB`).join(" · ") || "none"}</span>}
           </>}
         </div>
       </header>
@@ -423,13 +462,20 @@ export default function App() {
           <h2 id="h-sensor">2 · Exact model input</h2>
           <SensorView built={built} />
           <p className="small muted">Fixed sensor camera, 512×512 PNG, neutral yellow marker around the target slot (same box for every target type).</p>
-          <button className="primary" onClick={analyze} disabled={busy || !health}>
+          <label className="small">Local model&nbsp;
+            <select value={lockSel} onChange={(e) => setLockSel(e.target.value)}>
+              {(models?.locks ?? []).map((l) => <option key={l.lock_file} value={l.lock_file}>
+                {l.model_id}{l.headline ? " (headline)" : " (exploratory)"}</option>)}
+            </select></label>
+          <button className="primary" onClick={() => analyze(false)} disabled={busy || !health || !models}>
             {busy ? "Analyzing…" : "Analyze with both methods"}</button>
+          <button className="secondary" onClick={() => analyze(true)} disabled={busy || !health || !models}>
+            Compare all {models?.locks.filter((l) => l.frozen).length ?? 0} local models on this image</button>
           <div className="status" aria-live="polite">
             {analysis.phase !== "idle" && <p className="small">Status: <StatusChip status={analysis.phase} />
               {analysis.sha && <> · stored input sha256 <code>{short(analysis.sha, 16)}</code></>}</p>}
-            {analysis.progress && <ul className="small">{METHODS.map((m) => (
-              <li key={m}>{METHOD_LABEL[m]}: <StatusChip status={analysis.progress![m] ?? "queued"} /></li>))}</ul>}
+            {analysis.progress && <ul className="small">{Object.entries(analysis.progress).map(([k, st]) => (
+              <li key={k}>{k}: <StatusChip status={st} /></li>))}</ul>}
             {analysis.error && <p className="error" role="alert">{analysis.error}</p>}
           </div>
           {caseId && <>

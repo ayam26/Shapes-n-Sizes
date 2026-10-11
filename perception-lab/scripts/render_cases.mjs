@@ -33,6 +33,17 @@ await page.goto(`${APP}/?mode=capture`);
 await page.waitForFunction(() => document.body.dataset.ready === "1");
 const version = await page.evaluate(() => window.__pl.version);
 
+if (flag("--build-heldout2-manifest")) {
+  const cases = await page.evaluate(async () => (await import("/src/scene/manifest.ts")).buildHeldout2Manifest());
+  const out = join(ROOT, "experiments", "manifest-heldout2.json");
+  writeFileSync(out, JSON.stringify({ schema_version: 1, renderer_version: version, created_at: new Date().toISOString(),
+    note: "SEALED fresh test set for the model-improvement study: seed 29, oblique azimuth 35 and 60 deg (never used before). Runs refused until experiments/interventions.json is frozen.",
+    cases }, null, 2) + "\n");
+  console.log(`heldout2 manifest: ${cases.length} cases, sha256 ${sha(readFileSync(out))}`);
+  await browser.close();
+  process.exit(0);
+}
+
 if (flag("--build-fidelity-manifest")) {
   const cases = await page.evaluate(async () => (await import("/src/scene/manifest.ts")).buildFidelityManifest());
   const out = join(ROOT, "experiments", "manifest-fidelity.json");

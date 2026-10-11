@@ -54,7 +54,12 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json() as Promise<T>;
 }
 
+export interface ModelLock { lock_file: string; model_id: string; digest: string; quantization: string;
+  parameter_size: string; frozen: boolean; headline: boolean }
+export interface ModelsInfo { locks: ModelLock[]; loaded: { model?: string; size_bytes?: number; vram_bytes?: number; error?: string }[] }
+
 export const api = {
+  models: () => j<ModelsInfo>("/api/models"),
   health: () => j<Health>("/api/health"),
   runs: () => j<RunRow[]>("/api/runs"),
   run: (id: string) => j<RunDetail>(`/api/runs/${id}`),
@@ -76,4 +81,8 @@ export const METHODS = ["rgb_baseline", "rgb_structure_prompt"] as const;
 export const METHOD_LABEL: Record<string, string> = {
   rgb_baseline: "RGB baseline",
   rgb_structure_prompt: "RGB + structure prompt",
+  rgb_scene_context: "RGB + scene-context prompt",
+  rgb_two_step: "RGB + two-step decision",
+  rgb_context_two_step: "RGB + scene-context + two-step",
+  rgb_think: "RGB + reasoning mode",
 };

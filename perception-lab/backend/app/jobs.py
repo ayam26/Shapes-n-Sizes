@@ -22,16 +22,30 @@ def snapshot_config(method_ids: list[str], lock_file: str = "model-lock.json") -
     """Freeze the exact model config and prompts a run will use."""
     lock = config.load_json(lock_file)
     prompts = config.load_json("prompts.json")
+    iv_path = config.EXPERIMENTS / "interventions.json"
+    interventions = json.loads(iv_path.read_text()) if iv_path.exists() else {"methods": {}, "frozen": False}
     methods = {}
     for m in method_ids:
-        if m not in prompts["methods"]:
+        if m in prompts["methods"]:
+            entry, source = prompts["methods"][m], "prompts.json"
+        elif m in interventions["methods"]:
+            entry, source = interventions["methods"][m], "interventions.json"
+        else:
             raise KeyError(m)
-        text = prompts["methods"][m]["prompt"]
-        methods[m] = {"prompt": text, "prompt_hash": hashlib.sha256(
-            (text + json.dumps(prompts["output_schema"], sort_keys=True)).encode()).hexdigest()}
+        text = entry["prompt"]
+        think = entry.get("think")
+        methods[m] = {"prompt": text, "source": source, "prompt_hash": hashlib.sha256(
+            (text + json.dumps(prompts["output_schema"], sort_keys=True) + (f"|think={think}" if think is not None else "")
+             ).encode()).hexdigest()}
+        if think is not None:
+            methods[m]["think"] = think
+        if entry.get("options"):
+            methods[m]["options"] = entry["options"]
+            methods[m]["prompt_hash"] = hashlib.sha256((methods[m]["prompt_hash"] + json.dumps(entry["options"], sort_keys=True)).encode()).hexdigest()
     return {"lock": lock, "output_schema": prompts["output_schema"], "methods": methods,
             "lock_hash": lock_config_hash(lock, prompts["output_schema"]), "lock_file": lock_file,
-            "prompts_frozen": prompts.get("frozen", False), "lock_frozen": lock.get("frozen", False)}
+            "prompts_frozen": prompts.get("frozen", False), "lock_frozen": lock.get("frozen", False),
+            "interventions_frozen": interventions.get("frozen", False)}
 
 
 def reconcile_after_restart() -> int:
@@ -97,7 +111,8 @@ class Worker(threading.Thread):
                         hit["elapsed_ms"], json.dumps({"cached_from": hit["result_id"]}), db.now(), row["result_id"]))
             return
         provider = make_provider(lock, cfg["output_schema"])
-        res = provider.infer(image, method["prompt"])
+        extra = {k: method[k] for k in ("think", "options") if k in method}
+        res = provider.infer(image, method["prompt"], **extra)
         parsed = label = err = None
         if res["status"] == "completed":
             status, parsed, err = parse_output(res["raw"])

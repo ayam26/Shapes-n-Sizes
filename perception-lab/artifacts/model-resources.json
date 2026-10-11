@@ -1,0 +1,198 @@
+{
+  "measured_at": "2026-10-11T06:54:37Z",
+  "image": "data/cases/fid-019/input.png",
+  "prompt": "rgb_baseline (frozen rev 2)",
+  "options": {
+    "temperature": 0,
+    "seed": 7,
+    "num_predict": 256
+  },
+  "per_model": {
+    "nemotron3:33b": {
+      "cold_request_ms": 12570.187088997045,
+      "cold_load_ms": 11318.333301,
+      "resident": [
+        {
+          "model": "nemotron3:33b",
+          "size_gb": 32.687157952,
+          "vram_gb": 32.687157952
+        }
+      ],
+      "system_mem_delta_gib": 35.83475875854492,
+      "warm_ms": {
+        "n": 10,
+        "p50": 1305.2031104962225,
+        "p95": 1386.4355410041753,
+        "min": 1252.8046520019416,
+        "max": 1386.4355410041753
+      },
+      "warm_eval_tokens_per_s": 72.19072587063218,
+      "warm_prompt_eval_ms_p50": 236.909581,
+      "labels_warm": [
+        "flat_depiction"
+      ]
+    },
+    "qwen3.6:35b": {
+      "cold_request_ms": 12605.229674001748,
+      "cold_load_ms": 11091.102467,
+      "resident": [
+        {
+          "model": "qwen3.6:35b",
+          "size_gb": 34.561840256,
+          "vram_gb": 34.561840256
+        }
+      ],
+      "system_mem_delta_gib": 38.43313980102539,
+      "warm_ms": {
+        "n": 10,
+        "p50": 1604.476740500104,
+        "p95": 1811.3630849984474,
+        "min": 1505.39430599747,
+        "max": 1811.3630849984474
+      },
+      "warm_eval_tokens_per_s": 60.392895171138086,
+      "warm_prompt_eval_ms_p50": 321.561466,
+      "labels_warm": [
+        "physical_vehicle"
+      ]
+    },
+    "gemma4:26b": {
+      "cold_request_ms": 7492.266807996202,
+      "cold_load_ms": 6079.240048,
+      "resident": [
+        {
+          "model": "gemma4:26b",
+          "size_gb": 25.81979072,
+          "vram_gb": 25.81979072
+        }
+      ],
+      "system_mem_delta_gib": 25.930267333984375,
+      "warm_ms": {
+        "n": 10,
+        "p50": 1178.7408890013467,
+        "p95": 1237.8574880058295,
+        "min": 1116.7870729987044,
+        "max": 1237.8574880058295
+      },
+      "warm_eval_tokens_per_s": 64.00153295924208,
+      "warm_prompt_eval_ms_p50": 18.487632,
+      "labels_warm": [
+        "physical_vehicle"
+      ]
+    }
+  },
+  "ollama_version": "0.23.2",
+  "baseline_memory": {
+    "total_gib": 121.62754440307617,
+    "used_gib": 5.894947052001953,
+    "available_gib": 115.73259735107422
+  },
+  "all_resident": {
+    "resident": [
+      {
+        "model": "gemma4:26b",
+        "size_gb": 25.81979072,
+        "vram_gb": 25.81979072
+      },
+      {
+        "model": "qwen3.6:35b",
+        "size_gb": 34.561840256,
+        "vram_gb": 34.561840256
+      },
+      {
+        "model": "nemotron3:33b",
+        "size_gb": 32.687157952,
+        "vram_gb": 32.687157952
+      }
+    ],
+    "memory": {
+      "total_gib": 121.62754440307617,
+      "used_gib": 104.32362747192383,
+      "available_gib": 17.303916931152344
+    },
+    "total_resident_gb": 93.068788928
+  },
+  "switching_all_resident": {
+    "requests": [
+      {
+        "model": "nemotron3:33b",
+        "wall_ms": 1389.6597909988486,
+        "load_ms": 92.834416
+      },
+      {
+        "model": "qwen3.6:35b",
+        "wall_ms": 1571.3314050008194,
+        "load_ms": 131.250935
+      },
+      {
+        "model": "gemma4:26b",
+        "wall_ms": 1147.134485996503,
+        "load_ms": 133.985533
+      },
+      {
+        "model": "nemotron3:33b",
+        "wall_ms": 1255.4455169956782,
+        "load_ms": 76.336444
+      },
+      {
+        "model": "qwen3.6:35b",
+        "wall_ms": 1559.3919339953572,
+        "load_ms": 118.76438
+      },
+      {
+        "model": "gemma4:26b",
+        "wall_ms": 1157.4911269999575,
+        "load_ms": 144.37479
+      }
+    ],
+    "p50_ms": 1322.5526539972634,
+    "max_load_ms": 144.37479
+  },
+  "cpu_vs_gpu": {
+    "gemma4:26b": {
+      "cpu_cold_ms": 19708.62730499357,
+      "cpu_warm_ms": [
+        3109.890658997756,
+        2994.7652910050238
+      ],
+      "cpu_warm_p50_ms": 3052.32797500139,
+      "gpu_warm_p50_ms": 1178.7408890013467,
+      "speedup_gpu_over_cpu": 2.58948171178433,
+      "cpu_labels": [
+        "physical_vehicle",
+        "physical_vehicle"
+      ]
+    },
+    "nemotron3:33b": {
+      "cpu_cold_ms": 19290.093839998008,
+      "cpu_warm_ms": [
+        10205.487645995163,
+        9984.844591999718
+      ],
+      "cpu_warm_p50_ms": 10095.16611899744,
+      "gpu_warm_p50_ms": 1305.2031104962225,
+      "speedup_gpu_over_cpu": 7.734555670158785,
+      "cpu_labels": [
+        "flat_depiction",
+        "flat_depiction"
+      ]
+    }
+  },
+  "final_resident": [
+    {
+      "model": "gemma4:26b",
+      "size_gb": 25.81979072,
+      "vram_gb": 25.81979072
+    },
+    {
+      "model": "qwen3.6:35b",
+      "size_gb": 34.561840256,
+      "vram_gb": 34.561840256
+    },
+    {
+      "model": "nemotron3:33b",
+      "size_gb": 32.687157952,
+      "vram_gb": 32.687157952
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "frozen": false,
+  "frozen_at": null,
+  "revision": 1,
+  "note": "Inference-time interventions for the model-improvement study. Each method = the FROZEN rev-2 baseline prompt verbatim plus the stated addition (or a decoding change). Developed only on development, discovery and ego-lane fidelity cases; evaluated once on the sealed heldout2 split after freezing.",
+  "methods": {
+    "rgb_scene_context": {
+      "description": "Baseline + scene-context sentence (rendering style is not a depiction cue)",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. The whole image is a computer rendering of a 3D road scene, so the rendering style itself is not evidence of a depiction: judge whether the marked target is a three-dimensional object standing in that scene or a flat picture placed in it."
+    },
+    "rgb_two_step": {
+      "description": "Baseline + two-step decision (vehicle at all? then physical vs picture)",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. Decide in two steps. First: does the marked target show a vehicle at all, either as an object or as an image? If it does not, the label is other. Second, only if it does: is it an actual three-dimensional vehicle in the scene (physical_vehicle) or a flat picture of one (flat_depiction)?"
+    },
+    "rgb_context_two_step": {
+      "description": "Baseline + scene-context + two-step",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. The whole image is a computer rendering of a 3D road scene, so the rendering style itself is not evidence of a depiction: judge whether the marked target is a three-dimensional object standing in that scene or a flat picture placed in it. Decide in two steps. First: does the marked target show a vehicle at all, either as an object or as an image? If it does not, the label is other. Second, only if it does: is it an actual three-dimensional vehicle in the scene (physical_vehicle) or a flat picture of one (flat_depiction)?"
+    },
+    "rgb_think": {
+      "description": "Baseline prompt with model reasoning enabled (think=true); num_predict raised to 2048 because reasoning tokens count toward the output cap; output schema unchanged",
+      "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations.",
+      "think": true,
+      "options": {
+        "num_predict": 2048
+      }
+    }
+  }
+}

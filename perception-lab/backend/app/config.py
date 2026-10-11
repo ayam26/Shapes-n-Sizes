@@ -20,7 +20,7 @@ MAX_IMAGE_DIM = 2048
 
 LABELS = ("physical_vehicle", "flat_depiction", "other", "uncertain")
 TRUTH_LABELS = ("physical_vehicle", "flat_depiction", "other")
-SPLITS = ("development", "heldout", "discovery", "interactive", "fidelity")
+SPLITS = ("development", "heldout", "discovery", "interactive", "fidelity", "heldout2")
 OBSERVABILITY = ("clear", "ambiguous", "unchecked")
 
 

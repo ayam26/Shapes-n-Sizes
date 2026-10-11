@@ -217,7 +217,7 @@ def test_cache_hits_and_invalidates_on_prompt_change(client, tmp_root, monkeypat
         def __init__(self, lock, schema):
             pass
 
-        def infer(self, image, prompt):
+        def infer(self, image, prompt, think=None, options=None):
             calls.append(prompt)
             return {"status": "completed", "raw": '{"label":"other","visible_evidence":"x"}', "elapsed_ms": 1.0, "meta": {}}
 
@@ -246,7 +246,7 @@ def test_failure_state_is_recorded(client, monkeypatch):
         def __init__(self, lock, schema):
             pass
 
-        def infer(self, image, prompt):
+        def infer(self, image, prompt, think=None, options=None):
             return {"status": "timeout", "raw": None, "elapsed_ms": 1000.0, "meta": {}}
 
     monkeypatch.setattr(jobs, "make_provider", FakeTimeout)
@@ -289,3 +289,31 @@ def test_run_rejects_bad_model_lock(client):
     for bad in ("../state/run.json", "prompts.json", "model-lock-missing.json"):
         r = client.post("/api/runs", json={"case_ids": ["c-lock"], "method_ids": [B], "model_lock": bad})
         assert r.status_code == 422
+
+
+def test_heldout2_sealed_until_interventions_frozen(client, tmp_root):
+    upload(client, "c-h2", split="heldout2")
+    iv = tmp_root / "experiments" / "interventions.json"
+    iv.write_text(json.dumps({"frozen": False, "methods": {"rgb_think": {"prompt": "P", "think": True}}}))
+    files = [tmp_root / "experiments" / n for n in ("prompts.json", "model-lock.json")]
+    originals = [f.read_text() for f in files]
+    try:
+        for f in files:
+            d = json.loads(f.read_text()); d["frozen"] = True; f.write_text(json.dumps(d))
+        assert client.post("/api/runs", json={"case_ids": ["c-h2"], "method_ids": [B]}).status_code == 423
+        iv.write_text(json.dumps({"frozen": True, "methods": {"rgb_think": {"prompt": "P", "think": True}}}))
+        r = client.post("/api/runs", json={"case_ids": ["c-h2"], "method_ids": [B, "rgb_think"]})
+        assert r.status_code == 200
+        run = wait_run(client, r.json()["run_id"])
+        assert run["model_config"]["methods"]["rgb_think"]["think"] is True
+        assert run["model_config"]["methods"]["rgb_think"]["source"] == "interventions.json"
+    finally:
+        for f, o in zip(files, originals):
+            f.write_text(o)
+        iv.unlink()
+
+
+def test_think_flag_reaches_request():
+    req = OllamaProvider(LOCK, {}).build_request(solid_png(2, 2, (0, 0, 0)), "P", think=True)
+    assert req["think"] is True
+    assert OllamaProvider(LOCK, {}).build_request(solid_png(2, 2, (0, 0, 0)), "P")["think"] is False

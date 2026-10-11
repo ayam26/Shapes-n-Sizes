@@ -12,7 +12,8 @@ import urllib.request
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--api", default="http://127.0.0.1:8765")
-ap.add_argument("--split", required=True)
+ap.add_argument("--split", default=None)
+ap.add_argument("--case-ids", default=None, help="comma-separated case ids (alternative to --split)")
 ap.add_argument("--run-key", required=True)
 ap.add_argument("--label", default=None)
 ap.add_argument("--methods", default="rgb_baseline,rgb_structure_prompt")
@@ -34,8 +35,8 @@ def call(path, body=None):
 health = call("/api/health")
 print("health:", {k: health.get(k) for k in ("provider_mode", "configured_model", "digest_matches_lock",
                                              "prompts_frozen", "lock_frozen", "offline_guard")})
-cases = [c["case_id"] for c in call(f"/api/cases?split={a.split}")]
-print(f"{len(cases)} {a.split} cases")
+cases = a.case_ids.split(",") if a.case_ids else [c["case_id"] for c in call(f"/api/cases?split={a.split}")]
+print(f"{len(cases)} cases ({a.split or 'explicit list'})")
 if not a.no_warmup:
     print("warmup (unrecorded):", call(f"/api/warmup?model_lock={a.model_lock}", {}))
 run = call("/api/runs", {"case_ids": cases, "method_ids": a.methods.split(","), "run_key": a.run_key,
