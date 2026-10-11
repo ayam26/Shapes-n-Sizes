@@ -4,7 +4,7 @@
 
 Vision models used for driving sometimes "hallucinate": they miss real objects or report objects that are not there. One proposed cause is **texture bias** — ImageNet-trained networks classify mostly by surface texture rather than object shape ([Geirhos et al., 2019](https://arxiv.org/abs/1811.12231)). This project trains a road-object detector on our **ASUS Ascent GX10** to be shape-biased and tests, on real dashcam images and our own unfiltered dashcam footage, whether that helps.
 
-- **Status:** design complete; implementation plan next. Full design spec: [`docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md`](docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md).
+- **Status:** G1 passed (GX10 smoke test, [`results/g1_smoke.json`](results/g1_smoke.json): both backbones load; 50 training iterations at 1280×720, batch 8, ≈1.1 it/s, 8.75 GB); next: G2 data download and build ([`docs/runbook.md`](docs/runbook.md)). Design spec: [`docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md`](docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md). Implementation plan: [`docs/superpowers/plans/2026-10-11-snz-training-pipeline.md`](docs/superpowers/plans/2026-10-11-snz-training-pipeline.md).
 - **Deliverable:** an arXiv / workshop-style paper with code, preregistration, split manifests, and result summaries.
 - **Honesty rules:** every result is reported, including nulls and regressions; analysis is frozen before test data is evaluated; no claim of improved vehicle safety.
 
@@ -220,10 +220,16 @@ No test set is evaluated before G4. Footage can be recorded any time, but no mod
 ```text
 README.md                    this file — the full plan
 docs/superpowers/specs/      design spec (2026-10-11-shape-biased-detector-design.md)
+docs/superpowers/plans/      implementation plans
+docs/runbook.md              GX10 commands for gates G1–G3
+src/snz/                     data (splits, manifests), stylize (AdaIN), train, eval; `snz` CLI
+configs/                     splits, stylize, recipe (frozen at G3), arms
+scripts/                     GX10 setup and download scripts
+manifests/                   split manifests (image names + SHA-256), written at G2
+results/                     small result summaries (g1_smoke.json, pilot metrics, ...)
+tests/                       pytest suite (CPU, synthetic fixtures)
 perception-lab/              hackathon VLM testbed and results (pilot evidence)
-# planned:
-src/snz/                     data, stylize, train, eval, audit packages
-configs/  manifests/  prereg/  results/  tests/
+# planned (Plans 2–3): src/snz/eval analysis (bootstrap, operating points), src/snz/audit, prereg/
 ```
 
 ## 9. Licenses, privacy, provenance

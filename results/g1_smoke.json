@@ -1,0 +1,50 @@
+{
+  "torch": "2.14.1+cu130",
+  "cuda": "13.0",
+  "device": "cuda",
+  "device_name": "NVIDIA GB10",
+  "recipe": {
+    "frozen": false,
+    "batch_size": 8,
+    "lr": 0.01,
+    "momentum": 0.9,
+    "weight_decay": 0.0001,
+    "iterations": 50,
+    "warmup_iters": 1000,
+    "lr_steps": [],
+    "min_sizes": [
+      576,
+      608,
+      640,
+      672,
+      704,
+      720
+    ],
+    "max_size": 1280,
+    "hflip_p": 0.5,
+    "p_original": 0.5,
+    "trainable_layers": 3,
+    "bf16": true,
+    "num_workers": 8,
+    "log_every": 1,
+    "checkpoint_every": 50
+  },
+  "backbones": {
+    "in1k_v1": {
+      "loaded": true,
+      "trainable_params": 41122886,
+      "iterations": 50,
+      "iters_per_sec": 1.0927,
+      "peak_mem_gb": 8.75,
+      "final_loss": 0.6039131879806519
+    },
+    "sin": {
+      "loaded": true,
+      "trainable_params": 41122886,
+      "iterations": 50,
+      "iters_per_sec": 1.1507,
+      "peak_mem_gb": 8.75,
+      "final_loss": 0.5978185534477234
+    }
+  }
+}
