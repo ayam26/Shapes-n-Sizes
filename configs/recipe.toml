@@ -1,13 +1,14 @@
 # Training recipe shared by all four arms (spec §5.3).
-# Lines marked PILOT are chosen by the G3 pilot; then set `frozen = true` and commit.
-# `snz train` refuses non-pilot runs while frozen = false.
-frozen = false
+# Lines marked PILOT were chosen by the G3 pilot (BASE seed 0, id-val only):
+#   lr 0.01 -> id-val mAP 24.5, lr 0.02 -> 25.9 (6000 iterations each); 1.19 it/s alone.
+# FROZEN at G3 (2026-10-11). Changing anything here after prereg-v1 is a deviation.
+frozen = true
 
 batch_size = 8                 # PILOT
-lr = 0.01                      # PILOT  SGD learning rate at batch_size
+lr = 0.02                      # PILOT  SGD learning rate at batch_size
 momentum = 0.9
 weight_decay = 1e-4
-iterations = 27000             # PILOT  identical for every arm
+iterations = 18000             # PILOT  identical for every arm (~12.8 epochs, ~4.2 h)
 warmup_iters = 1000
 lr_steps = [0.67, 0.89]        # PILOT  fractions of `iterations`; LR x0.1 at each
 min_sizes = [576, 608, 640, 672, 704, 720]  # PILOT scale jitter (short side); last = eval size

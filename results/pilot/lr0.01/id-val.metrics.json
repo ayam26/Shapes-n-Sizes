@@ -1,0 +1,20 @@
+{
+  "split": "id-val",
+  "checkpoint": "/home/asus/snz-data/runs/pilot/lr0.01/final.pt",
+  "min_size": 720,
+  "images": 1248,
+  "detections": 91826,
+  "mAP": 0.24520918534012243,
+  "AP50": 0.5027426495670935,
+  "per_class": {
+    "pedestrian": 0.2453197314671768,
+    "rider": 0.16703193230078708,
+    "car": 0.4558458520787321,
+    "truck": 0.27947368712615456,
+    "bus": 0.2799413777692285,
+    "motorcycle": 0.1198236030370772,
+    "bicycle": 0.10426175039667737,
+    "traffic light": 0.24229588542112535,
+    "traffic sign": 0.31288884846414283
+  }
+}

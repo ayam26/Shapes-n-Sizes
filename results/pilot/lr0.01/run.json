@@ -1,0 +1,44 @@
+{
+  "arm": "BASE",
+  "backbone": "in1k_v1",
+  "stylized": false,
+  "seed": 0,
+  "recipe_sha256": "7d938d6953e81587126f31d61f53040158e5d109f79ad481fc050d4de277f479",
+  "frames": 11229,
+  "iterations": 6000,
+  "recipe": {
+    "frozen": false,
+    "batch_size": 8,
+    "lr": 0.01,
+    "momentum": 0.9,
+    "weight_decay": 0.0001,
+    "iterations": 6000,
+    "warmup_iters": 1000,
+    "lr_steps": [
+      0.67,
+      0.89
+    ],
+    "min_sizes": [
+      576,
+      608,
+      640,
+      672,
+      704,
+      720
+    ],
+    "max_size": 1280,
+    "hflip_p": 0.5,
+    "p_original": 0.5,
+    "trainable_layers": 3,
+    "bf16": true,
+    "num_workers": 8,
+    "log_every": 20,
+    "checkpoint_every": 500
+  },
+  "pilot": true,
+  "git_commit": "unknown",
+  "device": "cuda",
+  "torch": "2.14.1+cu130",
+  "iters_per_sec_this_session": 0.7139,
+  "peak_mem_gb": 8.75
+}
