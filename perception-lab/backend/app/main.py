@@ -17,6 +17,7 @@ from .png import PNGError, solid_png, strip_and_validate
 from .providers import make_provider
 
 CASE_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
+LOCK_FILE = re.compile(r"^model-lock(-[a-z0-9.]{1,40})?\.json$")
 worker = Worker()
 
 
@@ -169,6 +170,7 @@ class RunRequest(BaseModel):
     run_key: str | None = Field(default=None, max_length=64)
     label: str | None = Field(default=None, max_length=200)
     use_cache: bool = False
+    model_lock: str = "model-lock.json"  # alternative frozen lock files are for exploratory cross-model runs
 
 
 @app.post("/api/runs")
@@ -183,8 +185,10 @@ def create_run(req: RunRequest):
         raise HTTPException(404, "unknown case id(s)")
     if any(c["render_status"] != "valid" for c in cases):
         raise HTTPException(422, "render_invalid cases cannot be run")
+    if not LOCK_FILE.match(req.model_lock) or not (config.EXPERIMENTS / req.model_lock).is_file():
+        raise HTTPException(422, "model_lock must name an existing experiments/model-lock*.json file")
     try:
-        cfg = snapshot_config(req.method_ids)
+        cfg = snapshot_config(req.method_ids, req.model_lock)
     except KeyError as e:
         raise HTTPException(422, f"unknown method {e}")
     if any(c["split"] == "heldout" for c in cases) and not (cfg["prompts_frozen"] and cfg["lock_frozen"]):
@@ -262,9 +266,11 @@ WARMUP_PNG = solid_png(64, 64, (128, 128, 128))
 
 
 @app.post("/api/warmup")
-def warmup():
+def warmup(model_lock: str = "model-lock.json"):
     """One unrecorded inference so cold-load time is kept out of measured latency."""
-    lock = config.load_json("model-lock.json")
+    if not LOCK_FILE.match(model_lock) or not (config.EXPERIMENTS / model_lock).is_file():
+        raise HTTPException(422, "model_lock must name an existing experiments/model-lock*.json file")
+    lock = config.load_json(model_lock)
     prompts = config.load_json("prompts.json")
     provider = make_provider(lock, prompts["output_schema"])
     res = provider.infer(WARMUP_PNG, "Describe this image. Return JSON with label and visible_evidence.")

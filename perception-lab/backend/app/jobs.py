@@ -18,9 +18,9 @@ def lock_config_hash(lock: dict, output_schema: dict) -> str:
                                   "preprocessing": "png->base64, Ollama model-internal resize"})
 
 
-def snapshot_config(method_ids: list[str]) -> dict:
+def snapshot_config(method_ids: list[str], lock_file: str = "model-lock.json") -> dict:
     """Freeze the exact model config and prompts a run will use."""
-    lock = config.load_json("model-lock.json")
+    lock = config.load_json(lock_file)
     prompts = config.load_json("prompts.json")
     methods = {}
     for m in method_ids:
@@ -30,7 +30,7 @@ def snapshot_config(method_ids: list[str]) -> dict:
         methods[m] = {"prompt": text, "prompt_hash": hashlib.sha256(
             (text + json.dumps(prompts["output_schema"], sort_keys=True)).encode()).hexdigest()}
     return {"lock": lock, "output_schema": prompts["output_schema"], "methods": methods,
-            "lock_hash": lock_config_hash(lock, prompts["output_schema"]),
+            "lock_hash": lock_config_hash(lock, prompts["output_schema"]), "lock_file": lock_file,
             "prompts_frozen": prompts.get("frozen", False), "lock_frozen": lock.get("frozen", False)}
 
 

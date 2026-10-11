@@ -189,10 +189,23 @@ def test_run_flow_paired_inputs_identical(client):
         assert client.get(f"/api/export/{r['run_id']}?fmt={fmt}").status_code == 200
 
 
-def test_heldout_sealed_until_frozen(client):
+def test_heldout_sealed_until_frozen(client, tmp_root):
     upload(client, "c-held", split="heldout")
     r = client.post("/api/runs", json={"case_ids": ["c-held"], "method_ids": [B]})
     assert r.status_code == 423
+    files = [tmp_root / "experiments" / n for n in ("prompts.json", "model-lock.json")]
+    originals = [f.read_text() for f in files]
+    try:
+        for f in files:
+            d = json.loads(f.read_text())
+            d["frozen"] = True
+            f.write_text(json.dumps(d))
+        r = client.post("/api/runs", json={"case_ids": ["c-held"], "method_ids": [B]})
+        assert r.status_code == 200
+        wait_run(client, r.json()["run_id"])
+    finally:
+        for f, o in zip(files, originals):
+            f.write_text(o)
 
 
 def test_cache_hits_and_invalidates_on_prompt_change(client, tmp_root, monkeypatch):
@@ -269,3 +282,10 @@ def test_offline_guard_blocks_external_allows_loopback():
     finally:
         netguard.disable()
         srv.close()
+
+
+def test_run_rejects_bad_model_lock(client):
+    upload(client, "c-lock")
+    for bad in ("../state/run.json", "prompts.json", "model-lock-missing.json"):
+        r = client.post("/api/runs", json={"case_ids": ["c-lock"], "method_ids": [B], "model_lock": bad})
+        assert r.status_code == 422

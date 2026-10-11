@@ -17,6 +17,7 @@ ap.add_argument("--run-key", required=True)
 ap.add_argument("--label", default=None)
 ap.add_argument("--methods", default="rgb_baseline,rgb_structure_prompt")
 ap.add_argument("--no-warmup", action="store_true")
+ap.add_argument("--model-lock", default="model-lock.json", help="experiments/model-lock*.json (non-default = exploratory)")
 a = ap.parse_args()
 
 
@@ -36,9 +37,9 @@ print("health:", {k: health.get(k) for k in ("provider_mode", "configured_model"
 cases = [c["case_id"] for c in call(f"/api/cases?split={a.split}")]
 print(f"{len(cases)} {a.split} cases")
 if not a.no_warmup:
-    print("warmup (unrecorded):", call("/api/warmup", {}))
+    print("warmup (unrecorded):", call(f"/api/warmup?model_lock={a.model_lock}", {}))
 run = call("/api/runs", {"case_ids": cases, "method_ids": a.methods.split(","), "run_key": a.run_key,
-                         "label": a.label or f"{a.split} {a.run_key}"})
+                         "label": a.label or f"{a.split} {a.run_key}", "model_lock": a.model_lock})
 rid = run["run_id"]
 print("run:", run)
 while True:

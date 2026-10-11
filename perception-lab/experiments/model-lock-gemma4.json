@@ -1,0 +1,20 @@
+{
+  "provider": "ollama",
+  "endpoint": "http://127.0.0.1:11434/api/chat",
+  "runtime_version": "ollama 0.23.2",
+  "model_id": "gemma4:26b",
+  "model_digest": "5571076f3d70050487b26b341705799e0ab29b808164f90d20d4cf84f699d251",
+  "architecture": "gemma4",
+  "parameter_size": "25.8B",
+  "quantization": "Q4_K_M",
+  "think": false,
+  "options": {
+    "temperature": 0,
+    "seed": 7,
+    "num_predict": 256
+  },
+  "timeout_s": 180,
+  "frozen": true,
+  "frozen_at": "2026-10-11T06:05:53Z",
+  "purpose": "EXPLORATORY cross-model comparison; identical frozen prompts (rev 2), options and output schema as the headline nemotron3:33b lock. Prompts were developed on nemotron3:33b dev results only."
+}
