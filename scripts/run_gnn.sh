@@ -50,6 +50,10 @@ case "${1:-}" in
       --models "$G/models" --images "$D/stylized/t-texture" --stylized-copy 1 \
       --out-root "$G/runs" --arms "$ARMS"
     ;;
+  analyze)
+    uv run snz gnn-analyze --runs "$G/runs" --labels "$L/det_val.json" --manifests manifests \
+      --out results/gnn
+    ;;
   *)
     echo "usage: $0 outlines|train|rescore|analyze" >&2; exit 2 ;;
 esac

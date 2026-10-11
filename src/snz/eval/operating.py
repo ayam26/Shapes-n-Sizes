@@ -81,3 +81,27 @@ def false_detections(
     total = sum(counts.values())
     return {"per_image": total / n_images, "count": total,
             "by_type": {k: v / n_images for k, v in counts.items()}, "counts_by_type": counts}
+
+
+def threshold_for_false_rate(m: Matches, target: float,
+                             weights: np.ndarray | None = None) -> OperatingPoint:
+    """Lowest threshold whose false detections per image <= target (GNN plan, G2).
+
+    If even the top-scoring detection exceeds the target, the highest threshold is
+    returned, flagged. `recall` holds the recall at that threshold.
+    """
+    w = _w(m, weights)
+    n_images = float(w.sum())
+    if not len(m.det_score) or n_images == 0:
+        return OperatingPoint(float("inf"), 0.0, True)
+    order = np.argsort(-m.det_score, kind="mergesort")
+    scores = m.det_score[order]
+    false = np.isin(m.det_fd_type[order], FALSE_TYPES).astype(float) * w[m.det_image[order]]
+    rate = np.cumsum(false) / n_images
+    last_of_tie = np.r_[scores[1:] != scores[:-1], True]
+    ok = np.flatnonzero(last_of_tie & (rate <= target + 1e-12))
+    if ok.size:
+        t = float(scores[ok[-1]])
+        return OperatingPoint(t, recall_at(m, t, weights), False)
+    t = float(scores[0])
+    return OperatingPoint(t, recall_at(m, t, weights), True)

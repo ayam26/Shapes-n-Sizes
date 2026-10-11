@@ -176,6 +176,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
     p.set_defaults(func=_cmd_gnn_rescore)
 
+    p = commands.add_parser("gnn-analyze", help="GNN stage: G1-G3 and descriptive report")
+    p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s0/eval/")
+    p.add_argument("--labels", type=Path, required=True, help="det_val.json")
+    p.add_argument("--manifests", type=Path, default=Path("manifests"))
+    p.add_argument("--out", type=Path, default=Path("results/gnn"))
+    p.add_argument("--bootstrap", type=int, default=2000)
+    p.add_argument("--no-guard", action="store_true", help=argparse.SUPPRESS)
+    p.set_defaults(func=_cmd_gnn_analyze)
+
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
     p.add_argument("--labels", type=Path, required=True, help="det_val.json")
@@ -521,6 +530,21 @@ def _cmd_gnn_rescore(args) -> int:
             "ok_rate": float(o.ok.mean()) if len(o.ok) else None}
         prov_path.write_text(json.dumps(prov, indent=2))
         print(f"{arm}: {sum(len(r['scores']) for r in recs)} detections on {len(recs)} images")
+    return 0
+
+
+def _cmd_gnn_analyze(args) -> int:
+    from snz.eval.guard import ensure_split_allowed
+    from snz.gnn import GNN_PREREG_TAG
+    from snz.gnn.analyze import gnn_analyze, render_gnn_report
+
+    if not args.no_guard:
+        ensure_split_allowed("val-all", tag=GNN_PREREG_TAG)
+    result = gnn_analyze(args.runs, args.labels, args.manifests, n_boot=args.bootstrap)
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "analysis.json").write_text(json.dumps(result, indent=2))
+    (args.out / "report.md").write_text(render_gnn_report(result))
+    print((args.out / "report.md").read_text())
     return 0
 
 
