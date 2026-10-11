@@ -19,6 +19,7 @@ from torch import Tensor
 from torch.utils.data import DataLoader, Sampler
 
 from snz.data.bdd import Frame
+from snz.fsutil import atomic_replace
 from snz.train.config import Arm, Recipe, recipe_sha256
 from snz.train.dataset import BDDDetection, collate
 from snz.train.model import build_model
@@ -59,7 +60,7 @@ def _git_commit() -> str:
 def _atomic_save(obj, path: Path) -> None:
     tmp = path.with_name(path.name + ".tmp")
     torch.save(obj, tmp)
-    tmp.replace(path)
+    atomic_replace(tmp, path)
 
 
 def train_run(

@@ -68,3 +68,9 @@ def test_hflip_mirrors_boxes(tmp_path):
     assert target["boxes"].tolist() == [[44, 5, 54, 15]]  # width 64: x1' = 64-20, x2' = 64-10
     eval_ds = BDDDetection(frames, tmp_path / "img", seed=0, train=False, hflip_p=1.0)
     assert eval_ds[0][1]["boxes"].tolist() == [[10, 5, 20, 15]]
+
+
+def test_ignore_boxes_are_not_training_targets():
+    f = Frame("a.jpg", "clear", "daytime",
+              (Box("car", 1, 2, 30, 40), Box("truck", 0, 0, 5, 5, ignore=True)))
+    assert frame_target(f)["boxes"].tolist() == [[1, 2, 30, 40]]

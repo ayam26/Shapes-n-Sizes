@@ -16,6 +16,7 @@ from pathlib import Path
 from PIL import Image
 
 from snz.data.manifest import hash_rows, read_manifest, write_manifest
+from snz.fsutil import atomic_replace
 from snz.stylize.pool import list_styles, split_style_pool
 
 StylizeFn = Callable[[Image.Image, Image.Image], Image.Image]
@@ -68,7 +69,7 @@ def build_stylized(
                         f"stylizer changed size of {name}: {content.size} -> {result.size}")
                 tmp = out.with_name(out.name + ".tmp")
                 result.save(tmp, format="JPEG", quality=95)
-                tmp.replace(out)
+                atomic_replace(tmp, out)
             rows.append({"name": name, "copy": copy, "style": style, "file": out.name})
     return rows
 

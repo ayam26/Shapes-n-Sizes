@@ -37,8 +37,10 @@ def choose_variant(
 
 
 def frame_target(frame: Frame) -> dict[str, Tensor]:
-    boxes = torch.tensor([[b.x1, b.y1, b.x2, b.y2] for b in frame.boxes], dtype=torch.float32)
-    labels = torch.tensor([LABEL_INDEX[b.category] for b in frame.boxes], dtype=torch.int64)
+    # torchvision Faster R-CNN has no ignore-region support; ignore boxes are left out
+    kept = [b for b in frame.boxes if not b.ignore]
+    boxes = torch.tensor([[b.x1, b.y1, b.x2, b.y2] for b in kept], dtype=torch.float32)
+    labels = torch.tensor([LABEL_INDEX[b.category] for b in kept], dtype=torch.int64)
     return {"boxes": boxes.reshape(-1, 4), "labels": labels}
 
 

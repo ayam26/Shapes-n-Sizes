@@ -77,3 +77,30 @@ def test_predict_and_detections_roundtrip(tmp_path):
     write_detections(tmp_path / "d.jsonl", records)
     assert read_detections(tmp_path / "d.jsonl") == records
     evaluate(frames, records)  # runs end to end on real model output
+
+
+def test_guard_rejects_manifest_that_does_not_match_split(tmp_path):
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q",
+                    "--allow-empty", "-m", "x"], cwd=tmp_path, check=True)
+    m = tmp_path / "manifests"
+    m.mkdir()
+    (m / "id-val.csv").write_text("name,sha256\na.jpg,h1\n")
+    (m / "t-night.csv").write_text("name,sha256\nn.jpg,h2\n")
+    ensure_split_allowed("id-val", tmp_path, manifest=m / "id-val.csv")
+    with pytest.raises(ValueError, match="t-night.csv"):
+        ensure_split_allowed("id-val", tmp_path, manifest=m / "t-night.csv")
+    # test images inside a file named id-val.csv are still a test split
+    (m / "id-val.csv").write_text("name,sha256\na.jpg,h1\nn.jpg,h2\n")
+    with pytest.raises(PermissionError, match="t-night"):
+        ensure_split_allowed("id-val", tmp_path, manifest=m / "id-val.csv")
+
+
+def test_ignore_regions_do_not_count_as_false_detections():
+    frames = [Frame("a.jpg", "clear", "daytime", (
+        Box("car", 0, 0, 10, 10),
+        Box("car", 50, 50, 70, 70, ignore=True),  # e.g. "other vehicle"
+    ))]
+    dets = [_det("a.jpg", ("car", 0, 0, 10, 10, 0.9), ("car", 50, 50, 70, 70, 0.95))]
+    r = evaluate(frames, dets)
+    assert r["mAP"] == pytest.approx(1.0)

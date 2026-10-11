@@ -30,7 +30,8 @@ def evaluate(
                 w, h = b.x2 - b.x1, b.y2 - b.y1
                 annotations.append({"id": len(annotations) + 1, "image_id": image_ids[f.name],
                                     "category_id": cat_ids[b.category],
-                                    "bbox": [b.x1, b.y1, w, h], "area": w * h, "iscrowd": 0})
+                                    "bbox": [b.x1, b.y1, w, h], "area": w * h,
+                                    "iscrowd": int(b.ignore)})
     dts = []
     for d in detections:
         for (x1, y1, x2, y2), label, score in zip(d["boxes"], d["labels"], d["scores"],
@@ -40,8 +41,8 @@ def evaluate(
                             "bbox": [x1, y1, x2 - x1, y2 - y1], "score": score})
 
     result = {"images": len(frames), "detections": len(dts)}
-    with_gt = {a["category_id"] for a in annotations}
-    if not dts or not annotations:
+    with_gt = {a["category_id"] for a in annotations if not a["iscrowd"]}
+    if not dts or not with_gt:
         result.update(mAP=0.0, AP50=0.0,
                       per_class={c: (0.0 if cat_ids[c] in with_gt else None) for c in classes})
         return result

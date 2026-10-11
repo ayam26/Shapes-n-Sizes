@@ -18,8 +18,8 @@ def test_load_frames_normalizes_and_drops(tmp_path):
             ("person", 1, 1, 5, 9),        # 2018 alias -> pedestrian
             ("bike", 1, 1, 5, 9),          # alias -> bicycle
             ("motor", 1, 1, 5, 9),         # alias -> motorcycle
-            ("other vehicle", 0, 0, 5, 5), # unknown -> dropped, counted
-            ("trailer", 0, 0, 5, 5),
+            ("bicycle rack", 0, 0, 5, 5),  # unknown -> dropped, counted
+            ("lane marker", 0, 0, 5, 5),
             ("car", 5, 5, 5.5, 20),        # width < 1 px -> dropped
         ]),
         {"name": "b.jpg", "attributes": {"weather": "rainy", "timeofday": "night"}, "labels": None},
@@ -31,7 +31,7 @@ def test_load_frames_normalizes_and_drops(tmp_path):
     assert b.boxes == () and (b.weather, b.timeofday) == ("rainy", "night")
     assert (c.weather, c.timeofday) == ("undefined", "undefined")
     assert stats.frames == 3 and stats.boxes == 4
-    assert stats.dropped_unknown == {"other vehicle": 1, "trailer": 1}
+    assert stats.dropped_unknown == {"bicycle rack": 1, "lane marker": 1}
     assert stats.dropped_degenerate == 1
 
 
@@ -97,3 +97,13 @@ def test_select_frames_keeps_manifest_order_and_reports_missing():
     assert [f.name for f in select_frames(frames, ["b.jpg", "a.jpg"])] == ["b.jpg", "a.jpg"]
     with pytest.raises(KeyError, match="1 manifest name"):
         select_frames(frames, ["a.jpg", "zzz.jpg"])
+
+
+def test_bdd_ignore_categories_become_ignore_regions(tmp_path):
+    item = frame_json("a.jpg", labels=[("other vehicle", 0, 0, 5, 5), ("trailer", 0, 0, 9, 9),
+                                       ("other person", 1, 1, 4, 8)])
+    loaded, stats = load_frames(write_labels(tmp_path / "l.json", [item]))
+    boxes = loaded[0].boxes
+    assert [(b.category, b.ignore) for b in boxes] == [
+        ("car", True), ("truck", True), ("pedestrian", True)]
+    assert stats.ignored == 3 and stats.dropped_unknown == {} and stats.boxes == 3

@@ -147,7 +147,7 @@ def _cmd_evaluate(args) -> int:
     from snz.train.config import load_recipe
     from snz.train.model import build_model
 
-    ensure_split_allowed(args.split)
+    ensure_split_allowed(args.split, manifest=args.manifest)
     recipe = load_recipe(args.recipe)
     frames, _ = load_frames(args.labels)
     frames = select_frames(frames, [n for n, _ in read_manifest(args.manifest)])

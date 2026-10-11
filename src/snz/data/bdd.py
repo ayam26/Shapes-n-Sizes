@@ -15,6 +15,9 @@ CLASSES = (
 )
 EVAL_CLASSES = tuple(c for c in CLASSES if c != "train")  # `train` too rare for stable AP
 ALIASES = {"person": "pedestrian", "bike": "bicycle", "motor": "motorcycle"}
+# BDD's official detection config maps these to a class and treats them as ignore
+# (crowd) regions: never a training target, never a false positive in evaluation.
+IGNORED_MAPPING = {"other vehicle": "car", "other person": "pedestrian", "trailer": "truck"}
 MIN_BOX_SIDE = 1.0  # px; torchvision rejects zero-area boxes
 
 TRAIN_SPLITS = ("train", "id-val")
@@ -28,6 +31,7 @@ class Box:
     y1: float
     x2: float
     y2: float
+    ignore: bool = False
 
 
 @dataclass(frozen=True)
@@ -44,6 +48,7 @@ class LoadStats:
     boxes: int = 0
     dropped_unknown: dict[str, int] = field(default_factory=dict)
     dropped_degenerate: int = 0
+    ignored: int = 0
 
 
 def load_frames(path: Path | str) -> tuple[list[Frame], LoadStats]:
@@ -64,14 +69,18 @@ def load_frames(path: Path | str) -> tuple[list[Frame], LoadStats]:
             if b is None:
                 continue  # non-box annotation
             category = ALIASES.get(label["category"], label["category"])
+            ignore = category in IGNORED_MAPPING
+            category = IGNORED_MAPPING.get(category, category)
             if category not in CLASSES:
                 stats.dropped_unknown[category] = stats.dropped_unknown.get(category, 0) + 1
                 continue
-            box = Box(category, float(b["x1"]), float(b["y1"]), float(b["x2"]), float(b["y2"]))
+            box = Box(category, float(b["x1"]), float(b["y1"]), float(b["x2"]), float(b["y2"]),
+                      ignore)
             if box.x2 - box.x1 < MIN_BOX_SIDE or box.y2 - box.y1 < MIN_BOX_SIDE:
                 stats.dropped_degenerate += 1
                 continue
             boxes.append(box)
+            stats.ignored += ignore
         frames.append(Frame(
             name,
             attrs.get("weather", "undefined"),
