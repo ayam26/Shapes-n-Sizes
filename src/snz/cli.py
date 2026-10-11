@@ -143,7 +143,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--segmenter", choices=["sam2", "grabcut"], default="sam2")
     p.add_argument("--device", default="cuda")
     p.add_argument("--sam2-checkpoint", type=Path)
+    p.add_argument("--shard", help="K/N: only every N-th image starting at K (parallel runs)")
     p.set_defaults(func=_cmd_gnn_outlines)
+
+    p = commands.add_parser("gnn-merge-outlines", help="merge gnn-outlines shards")
+    p.add_argument("--parts", type=Path, nargs="+", required=True)
+    p.add_argument("--detections", type=Path, required=True, help="defines the image order")
+    p.add_argument("--out", type=Path, required=True)
+    p.set_defaults(func=_cmd_gnn_merge_outlines)
 
     p = commands.add_parser("analyze", help="G6: all analyses from per-run test detections")
     p.add_argument("--runs", type=Path, required=True, help="dir of <ARM>-s<seed>/eval/")
@@ -422,12 +429,29 @@ def _cmd_gnn_outlines(args) -> int:
         if done % 250 == 0 or done == total:
             print(f"outlines {done}/{total}", file=sys.stderr, flush=True)
 
-    o = extract_outlines(read_detections(args.detections), args.images, segmenter, file_name,
-                         progress)
+    records = read_detections(args.detections)
+    if args.shard:
+        from snz.gnn.outlines import shard_records
+
+        k, n = map(int, args.shard.split("/"))
+        records = shard_records(records, k, n)
+    o = extract_outlines(records, args.images, segmenter, file_name, progress)
     save_outlines(args.out, o)
     print(json.dumps({"images": len(o.names), "outlines": len(o.score),
                       "ok_rate": float(o.ok.mean()) if len(o.ok) else None,
                       "segmenter": args.segmenter}))
+    return 0
+
+
+def _cmd_gnn_merge_outlines(args) -> int:
+    from snz.eval.predict import read_detections
+    from snz.gnn.outlines import load_outlines, merge_outlines, save_outlines
+
+    names = [r["name"] for r in read_detections(args.detections)]
+    o = merge_outlines([load_outlines(p) for p in args.parts], names)
+    save_outlines(args.out, o)
+    print(json.dumps({"images": len(o.names), "outlines": len(o.score),
+                      "ok_rate": float(o.ok.mean()) if len(o.ok) else None}))
     return 0
 
 
