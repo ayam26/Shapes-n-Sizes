@@ -94,14 +94,24 @@ scripts/run_g6.sh   # predictions on val-all and T-texture per run, then `snz an
 
 Commit `results/analysis.json` and `results/report.md` (not the detection files).
 
-## G7 — your dashcam footage (after G6)
+## G7 — dashcam footage (after G6)
 
-Footage stays private (never in git). Record video only, no audio.
+Footage is the open comma2k19 dataset (MIT), Chunk_1, every segment (prereg amendment):
 
-1. Put the drives in one folder with `drives.csv`:
-   `drive_id,file,time_of_day,weather` (one row per drive; tag each drive).
+```bash
+cd ~/snz-data/footage-src
+curl -fL -C - -o Chunk_1.zip https://huggingface.co/datasets/commaai/comma2k19/resolve/main/raw_data/Chunk_1.zip
+unzip -q Chunk_1.zip
+cd ~/Shapes-n-Sizes
+uv run snz footage-drives-comma2k19 --root ~/snz-data/footage-src/Chunk_1 \
+  --out ~/snz-data/footage-src/drives.csv
+```
+
+(Own drives instead: one folder with `drives.csv`: `drive_id,file,time_of_day,weather[,fps]`.)
+
+1. `drives.csv` lists every drive of the collection period.
 2. Sample frames (every N seconds, N chosen for ≥ 2,000 frames; nothing hand-picked):
-   `uv run snz footage-sample --drives ~/footage/drives.csv --out ~/snz-data/footage`
+   `uv run snz footage-sample --drives ~/snz-data/footage-src/drives.csv --out ~/snz-data/footage`
 3. Predict with the seed-0 run of each arm:
    ```bash
    for ARM in BASE STY SIN BOTH; do uv run snz footage-predict \

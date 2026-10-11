@@ -92,6 +92,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-frames", type=int, default=2000)
     p.set_defaults(func=_cmd_footage_sample)
 
+    p = commands.add_parser("footage-drives-comma2k19",
+                            help="G7: drives.csv for comma2k19 (every segment is a drive)")
+    p.add_argument("--root", type=Path, required=True, help="extracted Chunk_N folder")
+    p.add_argument("--out", type=Path, required=True, help="drives.csv (next to the chunk)")
+    p.set_defaults(func=_cmd_comma2k19_drives)
+
     p = commands.add_parser("footage-predict", help="G7: one run's detections on the footage")
     p.add_argument("--manifest", type=Path, required=True, help="footage.csv")
     p.add_argument("--frames", type=Path, required=True)
@@ -295,6 +301,13 @@ def _seed0_footage(runs: Path, analysis: Path) -> tuple[dict, dict]:
             dets[arm] = read_detections(f)
             th[arm] = thresholds[f"{arm}-s0"]["threshold"]
     return dets, th
+
+
+def _cmd_comma2k19_drives(args) -> int:
+    from snz.data.footage import comma2k19_drives
+
+    print(f"{len(comma2k19_drives(args.root, args.out))} segments -> {args.out}")
+    return 0
 
 
 def _cmd_footage_predict(args) -> int:

@@ -101,3 +101,60 @@ def test_label_sample_is_random_and_reproducible(tmp_path):
     a = label_sample(tmp_path / "footage.csv", 100, seed=0)
     assert len(a) == 100 == len(set(a)) and a == label_sample(tmp_path / "footage.csv", 100, 0)
     assert a != [f"f{i}.jpg" for i in range(100)]
+
+
+def make_raw_stream(path, seconds=10, fps=5):
+    """Raw MPEG-4 elementary stream (no container, no reliable timestamps), like comma2k19's
+    raw HEVC files."""
+    with av.open(str(path), "w", format="m4v") as out:
+        stream = out.add_stream("mpeg4", rate=fps)
+        stream.width, stream.height, stream.pix_fmt = 64, 48, "yuv420p"
+        for i in range(seconds * fps):
+            t = i / fps
+            value = 0 if 4.0 <= t < 5.0 else 60 + 15 * int(t)
+            img = np.full((48, 64, 3), value, np.uint8)
+            for packet in stream.encode(av.VideoFrame.from_ndarray(img, format="rgb24")):
+                out.mux(packet)
+        for packet in stream.encode():
+            out.mux(packet)
+    return path
+
+
+def test_raw_stream_with_declared_fps(tmp_path):
+    from snz.data.footage import video_duration
+
+    video = make_raw_stream(tmp_path / "video.m4v")
+    assert video_duration(video, fps=5) == pytest.approx(10.0)
+    rows, drops = extract_frames(video, "seg", 2, tmp_path / "f", fps=5)
+    assert [r["t"] for r in rows] == [0, 2, 6, 8]
+    assert drops == [{"drive": "seg", "t": 4, "reason": "black"}]
+    assert len({r["sha256"] for r in rows}) == 4
+
+
+def test_drives_csv_fps_column(tmp_path):
+    from snz.data.footage import sample_footage
+
+    make_raw_stream(tmp_path / "a.m4v")
+    (tmp_path / "drives.csv").write_text(
+        "drive_id,file,time_of_day,weather,fps\na,a.m4v,daytime,unknown,5\n")
+    r = sample_footage(tmp_path / "drives.csv", tmp_path / "out", min_frames=5)
+    assert r["every_seconds"] == 2 and r["frames"] == 4
+
+
+def test_comma2k19_drives_csv(tmp_path):
+    from snz.data.footage import comma2k19_drives
+
+    root = tmp_path / "Chunk_1"
+    for route, segs in (("b0c9d2329ad1606b|2018-07-27--06-03-57", (3, 10)),
+                        ("99c94dc769b5d96e|2018-05-01--08-13-53", (1,))):
+        for seg in segs:
+            (root / route / str(seg)).mkdir(parents=True)
+            (root / route / str(seg) / "video.hevc").write_bytes(b"x")
+    (root / "stray").mkdir()
+    rows = comma2k19_drives(root, tmp_path / "drives.csv")
+    assert [r["drive_id"] for r in rows] == [
+        "99c94dc7_2018-05-01--08-13-53_1", "b0c9d232_2018-07-27--06-03-57_3",
+        "b0c9d232_2018-07-27--06-03-57_10"]
+    assert rows[0]["file"] == "Chunk_1/99c94dc769b5d96e|2018-05-01--08-13-53/1/video.hevc"
+    assert rows[0]["fps"] == 20 and rows[0]["time_of_day"] == "unknown"
+    assert (tmp_path / "drives.csv").read_text().startswith("drive_id,file,time_of_day,weather,fps")

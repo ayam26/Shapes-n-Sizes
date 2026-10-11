@@ -172,3 +172,11 @@ Command: `snz analyze` (see `docs/runbook.md`, G6).
 | 2026-10-11 | T-corrupt reduced to 300 images, severities 1/3/5, seed-0 runs | compute; exploratory only |
 | 2026-10-11 | schedule 18,000 iterations (spec placeholder 27,000) | measured 1.19 it/s; 12 runs in ~2.1 GX10-days (spec §5.4) |
 | 2026-10-11 | t-overcast drops 1 image identical to a t-rain image | content-hash disjointness |
+
+### Amendment after `prereg-v1` (2026-10-11, before any footage was sampled or any model ran on it)
+
+| Change | Reason |
+|---|---|
+| RQ5 footage: instead of the team's own drives, the open comma2k19 dataset (comma.ai, MIT license), **Chunk_1, every segment** (~3.3 h of commute driving, 1164×874 road camera, raw HEVC at a declared 20 fps). The sampling rule, thresholds, audit and recall protocol are otherwise unchanged. | Decision of the project lead: use open-source dashcam footage. Using a whole chunk keeps the "no hand selection" rule. |
+| Drives are tagged time of day / weather "unknown" (comma2k19 has no such tags). | Not available in the source. |
+| comma2k19 uses a different camera and region than BDD100K, so RQ5 also tests transfer across cameras. | Stated as a limitation. |
