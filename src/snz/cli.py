@@ -53,6 +53,17 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--batch-size", type=int)
     p.set_defaults(func=_cmd_train)
 
+    p = commands.add_parser("evaluate", help="predict + mAP on one split")
+    p.add_argument("--split", required=True, help="id-val before G4; test splits after")
+    p.add_argument("--labels", type=Path, required=True)
+    p.add_argument("--manifest", type=Path, required=True)
+    p.add_argument("--images", type=Path, required=True)
+    p.add_argument("--checkpoint", type=Path, required=True, help="<run>/final.pt")
+    p.add_argument("--recipe", type=Path, default=Path("configs/recipe.toml"))
+    p.add_argument("--out", type=Path, required=True, help="directory for detections + metrics")
+    p.add_argument("--device", default="cuda")
+    p.set_defaults(func=_cmd_evaluate)
+
     return parser
 
 
@@ -113,6 +124,34 @@ def _cmd_train(args) -> int:
         out_dir=args.out, device=args.device, pilot=args.pilot,
     )
     print(json.dumps(summary, indent=2))
+    return 0
+
+
+def _cmd_evaluate(args) -> int:
+    import torch
+
+    from snz.data.bdd import load_frames, select_frames
+    from snz.data.manifest import read_manifest
+    from snz.eval.coco_eval import evaluate
+    from snz.eval.guard import ensure_split_allowed
+    from snz.eval.predict import predict, write_detections
+    from snz.train.config import load_recipe
+    from snz.train.model import build_model
+
+    ensure_split_allowed(args.split)
+    recipe = load_recipe(args.recipe)
+    frames, _ = load_frames(args.labels)
+    frames = select_frames(frames, [n for n, _ in read_manifest(args.manifest)])
+    model = build_model(None, trainable_layers=recipe.trainable_layers,
+                        min_size=tuple(recipe.min_sizes), max_size=recipe.max_size)
+    model.load_state_dict(torch.load(args.checkpoint, map_location="cpu", weights_only=True))
+    records = predict(model, frames, args.images, device=args.device)
+    args.out.mkdir(parents=True, exist_ok=True)
+    write_detections(args.out / f"{args.split}.detections.jsonl", records)
+    metrics = {"split": args.split, "checkpoint": str(args.checkpoint),
+               **evaluate(frames, records)}
+    (args.out / f"{args.split}.metrics.json").write_text(json.dumps(metrics, indent=2))
+    print(json.dumps({k: metrics[k] for k in ("split", "mAP", "AP50")}, indent=2))
     return 0
 
 
