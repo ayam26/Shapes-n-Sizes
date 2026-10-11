@@ -80,3 +80,4 @@ shape-only check. The GNN targets texture-driven errors, not depiction confusion
 |---|---|---|
 | 2026-10-11 | `sam2` installed into the GX10 venv, not locked in `uv.lock` | sdist-only package that imports torch at build time |
 | 2026-10-11 | SAM 2 masks thresholded and cropped to each box (+10%) on the GPU before copying | 8× speed-up; contours come from inside the box either way |
+| 2026-10-11 (after G1–G3, before any footage label) | Footage audit (RQ5) run for BASE, GNN, RGB only: 100 blind detections per arm (300 items), thresholds = each arm's full-val equal-recall point (R*_val = BASE-s0 full-val recall at score ≥ 0.5). The 100-frame recall labeling is not run. | under 1 hour left; recall labeling takes 1.5–2.5 h |
