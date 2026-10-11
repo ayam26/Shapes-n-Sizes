@@ -140,6 +140,31 @@ def fidelity_table():
     return "\n".join(rows), "; ".join(totals)
 
 
+RES = json.loads((ROOT / "artifacts/model-resources.json").read_text()) if (ROOT / "artifacts/model-resources.json").exists() else None
+
+
+def resources_section():
+    if not RES:
+        return "Not measured."
+    rows = ["| Model | Params / quant | Resident in unified GPU memory | Cold request (load) | Warm p50 / p95 (n=10) | Output tokens/s | GPU vs CPU-only (warm p50) |",
+            "|---|---|---|---|---|---|---|"]
+    meta = {"nemotron3:33b": "33.0B / Q4_K_M", "qwen3.6:35b": "36.0B MoE / Q4_K_M", "gemma4:26b": "25.8B / Q4_K_M"}
+    for m, d in RES["per_model"].items():
+        cv = RES["cpu_vs_gpu"].get(m)
+        cpu = f"{cv['gpu_warm_p50_ms']:.0f} ms vs {cv['cpu_warm_p50_ms']:.0f} ms (**{cv['speedup_gpu_over_cpu']:.1f}×**)" if cv else "not measured"
+        rows.append(f"| {m} | {meta.get(m, '')} | {d['resident'][0]['size_gb']:.1f} GB ({d['resident'][0]['vram_gb']:.1f} GB on GPU) | "
+                    f"{d['cold_request_ms'] / 1000:.1f} s ({d['cold_load_ms'] / 1000:.1f} s) | {d['warm_ms']['p50']:.0f} / {d['warm_ms']['p95']:.0f} ms | "
+                    f"{d['warm_eval_tokens_per_s']:.0f} | {cpu} |")
+    a, sw = RES["all_resident"], RES["switching_all_resident"]
+    return ("\n".join(rows) + f"""
+
+All three models resident at once: **{a['total_resident_gb']:.1f} GB** of model weights in the GX10's {a['memory']['total_gib']:.1f} GiB unified memory
+({a['memory']['available_gib']:.1f} GiB still available). Round-robin requests across the three resident models: p50 **{sw['p50_ms']:.0f} ms**, max model-load time
+{sw['max_load_ms']:.0f} ms — i.e. switching models costs nothing beyond a normal request, versus 6–11 s per cold load when only one model fits.
+Measured {RES['measured_at']} with Ollama {RES['ollama_version']}, the frozen baseline prompt and a real corpus image (`fid-019`), serial requests
+(`scripts/measure_models.py`, raw data `artifacts/model-resources.json`). CPU-only = Ollama `num_gpu: 0` on the GX10's 20 Arm cores; labels matched the GPU runs.""")
+
+
 h1, h2 = runs["heldout-v1"]["recs"], runs["heldout-repeat-v1"]["recs"]
 a = {(r["case_id"], r["method_id"]): r["label"] for r in h1}
 b = {(r["case_id"], r["method_id"]): r["label"] for r in h2}
@@ -338,6 +363,17 @@ Labels changed between standard and high-fidelity renders — {fidelity_table()[
   From the ego-lane view, nemotron3 gave identical labels on every case at both fidelity levels.
 - gemma4's one oblique-truck abstention became correct (5/6 → 6/6, both methods); qwen3.6's oblique plain-board accuracy rose from 1/6 to 3/6 (both methods).
 - No model produced a false `physical_vehicle` label on any high-fidelity depiction under the baseline; qwen3.6's structure-prompt `depiction_as_vehicle` errors from the ego-lane view recurred (3/6, same as standard).
+
+### 6.9 Local hardware: memory, latency and acceleration
+
+{resources_section()}
+
+**Why local matters for this project.** (1) *Reproducibility*: every result is tied to a pinned model digest that cannot change underneath us,
+which is what makes the frozen-protocol comparisons in this report meaningful; hosted models can change silently between runs.
+(2) *Privacy and offline operation*: images never leave the LAN, and the backend runs with outbound connections blocked (§6.5).
+(3) *Cost-free iteration*: over 1,500 model requests were run for this report at no marginal cost. (4) *Many models at once*: the GX10's unified
+memory holds three ~30 B-parameter vision models simultaneously, so "same image, three models" is a 1–2 s interactive comparison
+(UI: **Compare all local models**) instead of a reload per model.
 
 ## 7. What this does and does not show
 

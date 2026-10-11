@@ -81,4 +81,8 @@ export const METHODS = ["rgb_baseline", "rgb_structure_prompt"] as const;
 export const METHOD_LABEL: Record<string, string> = {
   rgb_baseline: "RGB baseline",
   rgb_structure_prompt: "RGB + structure prompt",
+  rgb_scene_context: "RGB + scene-context prompt",
+  rgb_two_step: "RGB + two-step decision",
+  rgb_context_two_step: "RGB + scene-context + two-step",
+  rgb_think: "RGB + reasoning mode",
 };

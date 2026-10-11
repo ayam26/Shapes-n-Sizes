@@ -18,9 +18,12 @@
       "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations. The whole image is a computer rendering of a 3D road scene, so the rendering style itself is not evidence of a depiction: judge whether the marked target is a three-dimensional object standing in that scene or a flat picture placed in it. Decide in two steps. First: does the marked target show a vehicle at all, either as an object or as an image? If it does not, the label is other. Second, only if it does: is it an actual three-dimensional vehicle in the scene (physical_vehicle) or a flat picture of one (flat_depiction)?"
     },
     "rgb_think": {
-      "description": "Baseline prompt with model reasoning enabled (think=true); output schema unchanged",
+      "description": "Baseline prompt with model reasoning enabled (think=true); num_predict raised to 2048 because reasoning tokens count toward the output cap; output schema unchanged",
       "prompt": "Classify the marked target in this image. The target is the object inside the yellow rectangle. Allowed labels: physical_vehicle (an actual three-dimensional vehicle present in the scene), flat_depiction (a flat picture or image of a vehicle, for example printed on a board, sign or screen), other (anything else, including flat surfaces or objects that do not show a vehicle), uncertain. Use only visible evidence. If the image does not provide enough information to distinguish a physical vehicle from a depiction, answer uncertain. Return JSON with label and a short visible_evidence string. Do not make driving recommendations.",
-      "think": true
+      "think": true,
+      "options": {
+        "num_predict": 2048
+      }
     }
   }
 }

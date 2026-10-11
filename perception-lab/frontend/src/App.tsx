@@ -151,11 +151,11 @@ function EvidencePanel({ caseId, refresh }: { caseId: string | null; refresh: nu
       )}
       <AcrossModels results={c.results} />
       <div className="methods">
-        {METHODS.map((m) => {
+        {[...new Set([...METHODS, ...shown.map((r) => r.method_id)])].map((m) => {
           const r = byMethod[m];
           return (
             <div className="method" key={m}>
-              <h4>{METHOD_LABEL[m]}</h4>
+              <h4>{METHOD_LABEL[m] ?? m}</h4>
               {!r ? <p className="muted small">no result in this run</p> : (
                 <>
                   <div className="row"><StatusChip status={r.status} /> <LabelChip label={r.label} /> <OutcomeChip outcome={r.outcome} /></div>
@@ -166,6 +166,8 @@ function EvidencePanel({ caseId, refresh }: { caseId: string | null; refresh: nu
                   <details><summary>Exact prompt</summary><pre>{run?.model_config.methods[m]?.prompt ?? "(run not loaded)"}</pre>
                     <p className="small muted">prompt sha256 {short(r.prompt_hash, 16)}</p></details>
                   <details><summary>Raw model response</summary><pre>{r.raw_output ?? "(none)"}</pre></details>
+                  {r.provider_meta && JSON.parse(r.provider_meta).thinking && <details><summary>Model reasoning (stated, not verified)</summary>
+                    <pre>{JSON.parse(r.provider_meta).thinking}</pre></details>}
                   <details><summary>Model configuration &amp; timing</summary><pre>{JSON.stringify({
                     model_id: r.model_id, model_digest: r.model_digest, quantization: r.quantization, runtime: r.runtime_version,
                     options: r.options && JSON.parse(r.options), provider_meta: r.provider_meta && JSON.parse(r.provider_meta),

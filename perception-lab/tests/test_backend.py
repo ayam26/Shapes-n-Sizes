@@ -217,7 +217,7 @@ def test_cache_hits_and_invalidates_on_prompt_change(client, tmp_root, monkeypat
         def __init__(self, lock, schema):
             pass
 
-        def infer(self, image, prompt, think=None):
+        def infer(self, image, prompt, think=None, options=None):
             calls.append(prompt)
             return {"status": "completed", "raw": '{"label":"other","visible_evidence":"x"}', "elapsed_ms": 1.0, "meta": {}}
 
@@ -246,7 +246,7 @@ def test_failure_state_is_recorded(client, monkeypatch):
         def __init__(self, lock, schema):
             pass
 
-        def infer(self, image, prompt, think=None):
+        def infer(self, image, prompt, think=None, options=None):
             return {"status": "timeout", "raw": None, "elapsed_ms": 1000.0, "meta": {}}
 
     monkeypatch.setattr(jobs, "make_provider", FakeTimeout)
