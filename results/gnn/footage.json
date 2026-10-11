@@ -1,0 +1,187 @@
+{
+  "thresholds": {
+    "BASE": 0.5000023245811462,
+    "GNN": 0.18375012788409137,
+    "RGB": 0.17387891615196555
+  },
+  "frames": {
+    "BASE": 2270,
+    "GNN": 2270,
+    "RGB": 2270
+  },
+  "detections": {
+    "BASE": {
+      "frames": 2270,
+      "total": 26821,
+      "per_class": {
+        "car": 20760,
+        "traffic sign": 3688,
+        "traffic light": 1987,
+        "truck": 264,
+        "pedestrian": 87,
+        "rider": 4,
+        "bus": 29,
+        "bicycle": 1,
+        "motorcycle": 1
+      },
+      "per_frame_mean": 11.815418502202643
+    },
+    "GNN": {
+      "frames": 2270,
+      "total": 25864,
+      "per_class": {
+        "car": 20056,
+        "traffic sign": 3568,
+        "traffic light": 1803,
+        "truck": 307,
+        "pedestrian": 84,
+        "rider": 4,
+        "bus": 40,
+        "bicycle": 1,
+        "motorcycle": 1
+      },
+      "per_frame_mean": 11.393832599118943
+    },
+    "RGB": {
+      "frames": 2270,
+      "total": 25205,
+      "per_class": {
+        "car": 19463,
+        "traffic sign": 3495,
+        "traffic light": 1823,
+        "bus": 38,
+        "pedestrian": 69,
+        "truck": 307,
+        "rider": 4,
+        "motorcycle": 2,
+        "bicycle": 4
+      },
+      "per_frame_mean": 11.103524229074889
+    }
+  },
+  "audit": {
+    "BASE": {
+      "items": 100,
+      "unlabeled": 0,
+      "unsure": 11,
+      "n": 89,
+      "counts": {
+        "wrong_class": 4,
+        "correct": 76,
+        "unsure": 11,
+        "invented": 9
+      },
+      "precision": {
+        "p": 0.8539325842696629,
+        "ci95": [
+          0.7659707561062306,
+          0.9126053972658603
+        ]
+      },
+      "invented_share": {
+        "p": 0.10112359550561797,
+        "ci95": [
+          0.054118546891964145,
+          0.1811368993077429
+        ]
+      },
+      "total_detections": 26821,
+      "est_real": {
+        "estimate": 22903.325842696628,
+        "ci95": [
+          20544.101649525208,
+          24476.98936006764
+        ]
+      },
+      "est_invented": {
+        "estimate": 2712.2359550561796,
+        "ci95": [
+          1451.5135461893703,
+          4858.272776332972
+        ]
+      }
+    },
+    "GNN": {
+      "items": 100,
+      "unlabeled": 1,
+      "unsure": 7,
+      "n": 92,
+      "counts": {
+        "wrong_class": 2,
+        "unsure": 7,
+        "correct": 87,
+        "invented": 3
+      },
+      "precision": {
+        "p": 0.9456521739130435,
+        "ci95": [
+          0.8790146952375347,
+          0.9765649360513676
+        ]
+      },
+      "invented_share": {
+        "p": 0.03260869565217391,
+        "ci95": [
+          0.011151177410971533,
+          0.09153359952993573
+        ]
+      },
+      "total_detections": 25864,
+      "est_real": {
+        "estimate": 24458.347826086956,
+        "ci95": [
+          22734.836077623597,
+          25257.87550603257
+        ]
+      },
+      "est_invented": {
+        "estimate": 843.391304347826,
+        "ci95": [
+          288.4140525573677,
+          2367.4250182422575
+        ]
+      }
+    },
+    "RGB": {
+      "items": 100,
+      "unlabeled": 0,
+      "unsure": 6,
+      "n": 94,
+      "counts": {
+        "correct": 87,
+        "wrong_class": 1,
+        "unsure": 6,
+        "invented": 6
+      },
+      "precision": {
+        "p": 0.925531914893617,
+        "ci95": [
+          0.8541878776397197,
+          0.9634614191334335
+        ]
+      },
+      "invented_share": {
+        "p": 0.06382978723404255,
+        "ci95": [
+          0.029579735297574024,
+          0.13232973550994373
+        ]
+      },
+      "total_detections": 25205,
+      "est_real": {
+        "estimate": 23328.031914893614,
+        "ci95": [
+          21529.805455909136,
+          24284.04506925819
+        ]
+      },
+      "est_invented": {
+        "estimate": 1608.8297872340424,
+        "ci95": [
+          745.5572281753533,
+          3335.3709835281315
+        ]
+      }
+    }
+  }
+}

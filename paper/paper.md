@@ -1,20 +1,25 @@
-# Does Shape Bias Help Road-Object Detectors See Through Night and Weather? A Preregistered 2×2 Study on BDD100K
+# Does Shape Help Road-Object Detectors See Through Night and Weather? Preregistered Tests of Shape-Biased Training and a Texture-Blind GNN Verifier
 
-*Draft — results sections are filled from `results/report.md` after gate G6. Numbers marked
-⟨…⟩ are pending.*
+*Draft, 2026-10-11. Results: `results/gnn/report.md`, `results/gnn/footage.json`;
+preregistrations: `prereg/prereg.md` (`prereg-v1`), `prereg/prereg-v2.md` (`prereg-v2`).*
 
 ## Abstract
 
-ImageNet-trained convolutional networks classify largely by texture rather than shape, and
-training on style-transferred images increases their shape bias. We ask whether shape bias
-makes road-object detectors more robust when appearance changes but object shapes do not.
-We train Faster R-CNN (ResNet-50 + FPN) detectors in a preregistered 2 × 2 design —
-standard vs. Stylized-ImageNet backbone × normal vs. half-stylized training images, three
-seeds each — on clear daytime BDD100K images only, and test them on night, rain, snow and
-fog, on texture-scrambled copies of the clean test images, and on unfiltered dashcam
-footage with a blind audit of real, invented and missed objects. ⟨Main result: H2/H3
-supported or not, effect size with CI; H4; retention; clean cost.⟩ All code, split manifests,
-the preregistration, and result summaries are released.
+ImageNet-trained convolutional networks classify largely by texture rather than shape. We ask
+whether a road-object detector makes fewer texture-driven mistakes ("hallucinations") when a
+**texture-blind second stage** checks each detection by its outline alone. A Faster R-CNN
+(ResNet-50 + FPN) trained on clear-daytime BDD100K provides boxes. SAM 2 outlines each box, and
+a graph neural network that sees only the outline's geometry and size, never pixel colors,
+re-scores it. In a preregistered test on night, rain, snow and fog images (4,752), the GNN cut
+false detections at equal recall from 10.19 to 9.84 per image (Holm p = 0.0015), cut invented
+objects by 7.5%, and slightly raised recall at an equal false-alarm rate (p = 0.0015). A control
+second stage that sees texture (ResNet-18 on the crop) did better still (G3 not supported), and
+adding color to the outline graph hurt. On 2,270 unfiltered dashcam frames from a different
+camera (comma2k19), a blind audit gave the GNN 94.6% precision versus 85.4% for the detector
+alone and 92.6% for the texture control, with about a third of the invented detections.
+Training on texture-scrambled images (STY) tripled accuracy on texture-scrambled test images
+but cost 4 mAP on ordinary ones. All code, split manifests, preregistrations and result
+summaries are released.
 
 ## 1. Introduction
 
@@ -84,10 +89,13 @@ appears in two splits.
 
 ### 3.3 Training
 
-Identical recipe for all 12 runs (⟨batch, LR, iterations, schedule⟩, chosen on id-val with
-BASE seed 0 only), bf16, 1280×720 input with scale jitter and horizontal flips, on an ASUS
-Ascent GX10 (NVIDIA GB10). Every random choice is seeded; runs resume exactly after
-interruption.
+The learning rate (0.02, batch 8, SGD) was chosen by a pilot on id-val with BASE seed 0 only
+(id-val mAP 24.5 at 0.01 vs. 25.9 at 0.02). The 5-hour budget then set the recipe to
+4,500 iterations (≈ 3 epochs) at short side 384–448 (evaluated at 448), bf16, horizontal flips,
+one seed per arm, identical for every arm (`prereg-v1` amendment 2). Training ran on an ASUS
+Ascent GX10 (NVIDIA GB10) at ≈ 2.6 iterations/s. Every random choice is seeded; runs resume
+exactly after interruption. BASE-s0 and STY-s0 were trained before the project moved to the
+second-stage verifier.
 
 ### 3.4 Evaluation
 
@@ -99,11 +107,30 @@ bootstrap over test images (B = 2,000), arm metric = mean over seeds, one-sided 
 predicted direction, Holm correction over the six confirmatory tests; R* and every
 threshold are re-estimated within each bootstrap replicate.
 
-### 3.5 Footage audit
+### 3.5 Texture-blind GNN verifier (second stage)
 
-⟨Pending gate G7.⟩ Unfiltered frames every N seconds from all drives in a collection period;
-seed-0 detectors thresholded at their full-val equal-recall points; 150 detections per arm
-audited blind; 100 frames hand-labeled for recall.
+BASE-s0's detections (score ≥ 0.05, top 50 per image, 9 classes) are outlined by SAM 2.1
+(hiera-small, one box prompt each). The largest external contour is resampled to 64 points
+(clockwise, from the top-most point). Each point is a node with five translation- and
+scale-invariant geometry features (centroid offset, turning angle, discrete curvature, radius);
+edges connect ring neighbors at ±1, ±2, ±4; six size features (relative width, height, bottom
+position, horizontal position, log aspect ratio, fill ratio) describe the box. **No pixel
+values enter the GNN.** Three plain-PyTorch EdgeConv layers (64-64-128), max‖mean pooling and an
+MLP predict one of the 9 classes or background. A logistic regression fuses the detector score
+with the GNN's class and background probabilities into a new score; boxes and labels never
+change. Networks train on half of id-val (fold A, 1,248 clear-daytime images BASE never trained
+on); the fusion is fit on the other half (fold B). Controls: **RGB** (ResNet-18 on the box crop,
+same targets and fusion), **GNN-SHAPE** (size features zeroed) and **GNN-COLOR** (+ RGB at each
+contour point). Hypotheses G1–G3 and the analysis were frozen at tag `prereg-v2` after training
+and before any test-split re-scoring.
+
+### 3.6 Footage audit
+
+Unfiltered footage: comma2k19 Chunk 1 (every segment, one frame every 5 s; 2,270 frames). Each
+arm is thresholded at its full-val equal-recall point. 100 detections per arm (BASE, GNN, RGB)
+were sampled uniformly, shuffled with the arm hidden, and labeled real/correct class, real/wrong
+class, invented, or unsure; precision and invented share get Wilson 95% CIs and are scaled to
+estimated real and invented detection counts.
 
 ## 4. Results
 
@@ -202,26 +229,70 @@ over-fitted fusion.
 
 ### 4.7 Unfiltered dashcam footage (blind audit)
 
-⟨Pending: blind precision audit of BASE, GNN and RGB detections on comma2k19 footage (2,270
-frames, 100 detections per arm). Filled from `results/gnn/footage.json`.⟩
+Footage: comma2k19 Chunk 1 (comma.ai, MIT), every segment, one frame every 5 s → 2,270 frames
+(nothing hand-picked; 0 dropped). This is a different camera and region from BDD100K. Each arm
+was thresholded at its own full-val equal-recall point (R*_val = 0.578): BASE 0.500, GNN 0.184,
+RGB 0.174. For the blind audit, 100 detections per arm were sampled uniformly and shuffled
+together with the arm hidden, then labeled by one author (299 of 300 labeled; "unsure" excluded
+from precision; Wilson 95% CIs). Per the `prereg-v2` deviation log, only BASE, GNN and RGB were
+audited and the 100-frame recall check was not run.
+
+| Arm | Detections (per frame) | Precision | Invented share | Est. real detections | Est. invented detections |
+|---|---|---|---|---|---|
+| BASE | 26,821 (11.8) | 85.4% [76.6, 91.3] (n = 89) | 10.1% [5.4, 18.1] | 22,903 [20,544, 24,477] | 2,712 [1,452, 4,858] |
+| GNN | 25,864 (11.4) | **94.6%** [87.9, 97.7] (n = 92) | **3.3%** [1.1, 9.2] | **24,458** [22,735, 25,258] | **843** [288, 2,367] |
+| RGB | 25,205 (11.1) | 92.6% [85.4, 96.3] (n = 94) | 6.4% [3.0, 13.2] | 23,328 [21,530, 24,284] | 1,609 [746, 3,335] |
+
+On unfiltered footage, the GNN re-scored detector made 4% fewer detections than BASE but an
+estimated 7% **more real** ones (24,458 vs 22,903) and about a third as many invented ones
+(843 vs 2,712). That is the project's "more objects, and are they real?" question answered in
+the GNN's favor. The RGB control fell between the two. These are descriptive estimates from
+≈ 90 audited items per arm: the precision CIs of GNN and RGB overlap widely, BASE's overlaps
+GNN's only slightly, and without the recall check we cannot say how many objects each arm missed.
+Unlike on BDD T-shift (G3), the texture-blind GNN is not worse than RGB here. The footage
+differs from the training data in camera and region rather than mainly in lighting and weather.
 
 ### 4.8 Summary
 
 Shape-only re-scoring reduced false detections at matched recall under night and weather shift,
-and the effect is statistically clear (G1, G2) but small. A same-size second stage that sees
-texture did better on every measure (G3 not supported), and adding color to the shape graph made
-it worse. Under this setup we find **no evidence that discarding texture is what helps**. The
-gains come from a second look at each box, and that second look works better with texture.
+and the effect is statistically clear (G1, G2) but small: −3.4% false detections, −7.5% invented
+objects. On BDD a same-size second stage that sees texture did better (G3 not supported), and
+adding color to the shape graph made the GNN worse, so on BDD we find **no evidence that
+discarding texture is what helps**. On unfiltered footage from a different camera, the
+texture-blind GNN had the highest audited precision (94.6% vs 85.4% for BASE and 92.6% for RGB)
+and about a third of BASE's invented detections. Those footage estimates are descriptive and
+rest on ≈ 90 audited items per arm.
 
 ## 5. Discussion
 
-⟨After results.⟩ Points to address regardless of outcome: whether fine-tuning washes out
-backbone shape bias (H3 vs. H1b-SIN); the T-texture confound for STY/BOTH; what a null result
-means for texture-bias explanations of detector failures at night.
+**A second look helps; texture-blindness is not why.** Re-scoring each box with a small second
+network reduced false detections under night and weather shift, and the texture-blind GNN's
+gain was real (G1, G2). But on BDD every comparison that isolates texture went against the
+texture-bias explanation: the crop network that sees texture did better (G3), and adding color
+to the outline graph made the GNN worse rather than better. One reading is that the GNN's
+benefit comes from a different source of evidence (object outline from SAM 2), not from avoiding
+texture. Another is that night errors are less texture-driven than the hypothesis assumed: half
+of all false detections are poorly localized boxes, which no re-scorer can fix.
+
+**Footage tells a more favorable story for shape.** On unfiltered footage from another camera
+and region, the GNN had the highest audited precision and the fewest invented objects. With
+≈ 90 audited items per arm these are estimates, not tests, but they suggest that outline-based
+checking may transfer across cameras better than a texture classifier trained on one camera.
+
+**Texture-scrambled training trades accuracy for robustness.** STY retained far more accuracy on
+texture-scrambled images than BASE (7.6 vs. 2.3 mAP) but lost 4 mAP on ordinary val images.
+That T-texture gain is partly confounded: STY saw stylization artifacts in training.
+
+**What would change these conclusions:** more seeds and a full training schedule (BASE is weak),
+the untested SIN/BOTH arms, recall on footage, and a second test set (nuImages).
 
 ## 6. Limitations
 
 - One detector family and one dataset; 2018 rather than 2020 BDD labels.
+- Time budget: one seed per arm, short schedule (≈ 3 epochs) at reduced input size; SIN and
+  BOTH never trained, so the CNN hypotheses H1b–H4 were not tested.
+- Footage audit: one auditor (an author), ≈ 90 items per arm, three arms; recall on footage
+  not measured.
 - T-fog has 5 images; dawn/dusk and overcast are descriptive only.
 - Stylized training uses DTD textures rather than Painter by Numbers.
 - The footage audit is single-region and single-camera; auditors are the authors.

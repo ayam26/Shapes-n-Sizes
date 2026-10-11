@@ -1,0 +1,30 @@
+{
+  "R_star_val": 0.5784465935677243,
+  "footage_thresholds": {
+    "BASE-s0": {
+      "threshold": 0.5000023245811462,
+      "recall": 0.5784465935677243,
+      "flagged": false
+    },
+    "GNN-COLOR-s0": {
+      "threshold": 0.17694275409444488,
+      "recall": 0.5784465935677243,
+      "flagged": false
+    },
+    "GNN-SHAPE-s0": {
+      "threshold": 0.18388726862290958,
+      "recall": 0.5784465935677243,
+      "flagged": false
+    },
+    "GNN-s0": {
+      "threshold": 0.18375012788409137,
+      "recall": 0.5784465935677243,
+      "flagged": false
+    },
+    "RGB-s0": {
+      "threshold": 0.17387891615196555,
+      "recall": 0.5784465935677243,
+      "flagged": false
+    }
+  }
+}

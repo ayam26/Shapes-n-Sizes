@@ -67,3 +67,15 @@ R* = 0.5477 (BASE-s0 recall on t-shift at score ≥ 0.5); F* = 10.1854 false det
 Outline success rate (SAM 2 mask usable) by subset: t-clean 1.000, t-night 1.000, t-rain 1.000, t-snow 1.000, t-fog 1.000, t-dusk 1.000, t-overcast 1.000, t-shift 1.000.
 
 Code: 490f1a9cf6930f1eed92dfc295571822bd3b06c4.
+
+## Unfiltered dashcam footage — blind audit (descriptive)
+
+comma2k19 Chunk 1, 2,270 frames (every 5 s); thresholds = each arm's full-val equal-recall point
+(R*_val = 0.578): BASE 0.500, GNN 0.184, RGB 0.174. 100 detections per arm, arm hidden; 299/300
+labeled; unsure excluded; Wilson 95% CIs. Source: `results/gnn/footage.json`.
+
+| Arm | Detections (per frame) | Precision | Invented share | Est. real | Est. invented |
+|---|---|---|---|---|---|
+| BASE | 26,821 (11.8) | 0.854 [0.766, 0.913] | 0.101 [0.054, 0.181] | 22,903 | 2,712 |
+| GNN | 25,864 (11.4) | 0.946 [0.879, 0.977] | 0.033 [0.011, 0.092] | 24,458 | 843 |
+| RGB | 25,205 (11.1) | 0.926 [0.854, 0.963] | 0.064 [0.030, 0.132] | 23,328 | 1,609 |
