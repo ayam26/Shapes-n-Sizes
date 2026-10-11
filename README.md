@@ -6,6 +6,7 @@ This research project trains an object detector on an ASUS Ascent GX10 in four a
 
 ## Contents
 
+- [`DATASETS.md`](DATASETS.md) — open dashcam/driving datasets, weather and corner-case test sets, raw footage, texture-vs-shape probes, and hallucination benchmarks for the GX10's VLMs (Nemotron etc.), with licenses and download notes.
 - [`docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md`](docs/superpowers/specs/2026-10-11-shape-biased-detector-design.md) — current research design spec.
 - [`docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md`](docs/superpowers/specs/2026-10-11-shapes-n-sizes-design.md) — earlier VLM depiction-cue design (superseded).
 - [`perception-lab/`](perception-lab/README.md) — local automotive-perception testbed on the ASUS Ascent GX10 (UCSC ASUS Local AI hackathon). Start with `perception-lab/scripts/start.sh`; results in [`perception-lab/artifacts/report.md`](perception-lab/artifacts/report.md).
