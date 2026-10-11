@@ -107,14 +107,111 @@ audited blind; 100 frames hand-labeled for recall.
 
 ## 4. Results
 
-⟨Filled from `results/report.md`.⟩
+### 4.1 What was run
 
-- 4.1 Confirmatory tests (Table: H1b-STY, H1b-SIN, H2, H3, H4-STY, H4-SIN).
-- 4.2 Accuracy by subset (Table: mAP/AP50 per arm, mean ± SD over seeds).
-- 4.3 False detections by type at equal recall.
-- 4.4 Clean cost, BOTH and additivity (exploratory).
-- 4.5 T-corrupt (exploratory).
-- 4.6 Footage audit.
+The study ran under a 5-hour budget, and every change was recorded before the data it affects
+were evaluated (`prereg/prereg.md` amendment 2; `prereg/prereg-v2.md`). The CNN 2 × 2 was cut
+to **one seed per arm at short side 384–448 with 4,500 iterations**. Training stopped after
+BASE-s0 and STY-s0 when the project moved to the GNN shape verifier, which uses BASE-s0 as stage
+1. The `prereg-v1` confirmatory tests (H1b–H4) therefore were **not run**: SIN and BOTH were
+never trained. The GNN hypotheses G1–G3 (`prereg-v2`) were run in full: all five
+second-stage arms (BASE, GNN, RGB, GNN-SHAPE, GNN-COLOR) re-scored the same 483,120 BASE-s0
+detections on the 10,000 BDD100K val images. SAM 2 produced a usable outline for
+99.998% of them (100.0% on every subset).
+
+### 4.2 CNN arms (descriptive)
+
+| Arm | val-all mAP / AP50 | T-texture mAP / AP50 |
+|---|---|---|
+| BASE-s0 | 17.0 / 36.0 | 2.3 / 5.0 |
+| STY-s0 | 13.0 / 27.9 | 7.6 / 16.0 |
+
+pycocotools on all detections (score ≥ 0.05). Training on half-stylized images more than
+tripled accuracy on texture-scrambled images (2.3 → 7.6 mAP), but cost 4.0 mAP on ordinary val
+images. Both detectors are weak by design (≈3 epochs at reduced input size), so these numbers
+show direction, not ceiling performance. With one seed and no SIN arm, nothing here is a
+confirmatory test.
+
+### 4.3 Confirmatory tests (G1–G3)
+
+Pooled T-shift (night ∪ rain ∪ snow ∪ fog, 4,752 images). R* = 0.548 (BASE-s0 recall at score
+≥ 0.5); F* = 10.19 false detections per image (BASE-s0 at score ≥ 0.5). Paired bootstrap,
+B = 2,000, with R*, F* and all thresholds re-estimated in every replicate; Holm over three tests.
+No arm was flagged (every arm reached R* and F*).
+
+| Test | Comparison | Estimate | 95% CI | Holm p | Supported |
+|---|---|---|---|---|---|
+| G1 | GNN − BASE, false detections/image at R* | −0.345 | [−0.429, −0.236] | 0.0015 | **yes** |
+| G2 | GNN − BASE, recall at F* | +0.0036 | [+0.0026, +0.0045] | 0.0015 | **yes** |
+| G3 | GNN − RGB, false detections/image at R* | +0.309 | [+0.160, +0.447] | 1.0 | **no** |
+
+The texture-blind GNN removed 3.4% of BASE's false detections at equal recall (10.19 → 9.84
+per image; 48,397 → 46,756 in total) and found slightly more objects at an equal false-alarm
+rate (recall 0.548 → 0.551). G3 failed in the opposite direction from the hypothesis: the RGB
+control, which sees texture, removed **6.4%** (10.19 → 9.53 per image).
+
+### 4.4 What changed, by false-detection type (per image, at R*)
+
+| Arm | duplicate | wrong class | poor localization | invented | near another class |
+|---|---|---|---|---|---|
+| BASE | 0.578 | 0.282 | 5.209 | 3.886 | 0.230 |
+| GNN | 0.594 | 0.363 | 5.058 | **3.593** | 0.230 |
+| GNN-SHAPE | 0.594 | 0.335 | 5.076 | 3.641 | 0.229 |
+| GNN-COLOR | 0.603 | 0.362 | 5.071 | 3.691 | 0.234 |
+| RGB | 0.707 | 0.304 | 5.316 | **3.009** | 0.193 |
+
+Most of the GNN's gain is in *invented* objects (−7.5%) and poorly localized boxes (−2.9%); it
+added a few wrong-class detections (+0.08 per image). The RGB control cut invented objects by
+23% but kept more duplicates and poorly localized boxes. Poor localization is the largest error
+type for every arm (≈ 51% of BASE's false detections), and no second stage that keeps the
+boxes fixed can repair it.
+
+### 4.5 Accuracy by subset (mAP × 100)
+
+| Subset (images) | BASE | GNN | GNN-SHAPE | GNN-COLOR | RGB |
+|---|---|---|---|---|---|
+| T-clean (1,764) | 18.6 | 19.0 | 18.9 | 18.9 | 19.6 |
+| T-shift (4,752) | 13.8 | 14.1 | 14.0 | 14.0 | 14.4 |
+| night (3,929) | 12.4 | 12.7 | 12.7 | 12.6 | 12.8 |
+| rain (396) | 19.5 | 19.7 | 19.6 | 19.7 | 20.0 |
+| snow (422) | 17.1 | 17.0 | 17.1 | 17.0 | 18.0 |
+| fog (5) | 23.2 | 21.9 | 22.1 | 23.2 | 23.9 |
+| dusk (778) | 16.5 | 16.8 | 16.7 | 16.8 | 17.9 |
+| overcast (1,038) | 18.6 | 18.8 | 18.8 | 18.8 | 19.5 |
+| T-texture (1,764) | 2.3 | 2.3 | 2.4 | 2.4 | 2.3 |
+
+These are computed on the selected detection set (top 50 per image), so BASE differs slightly
+from §4.2. The second stages change mAP by at most +0.8 points, and the RGB control leads
+on every subset except T-texture. Re-scoring does not rescue T-texture (≈ 2.4 mAP for every
+arm): when stage 1 misses or mislabels objects on texture-scrambled images, re-ranking its boxes
+cannot help.
+
+### 4.6 Ablations (descriptive, 95% CIs)
+
+- **Size cues add nothing measurable:** GNN − GNN-SHAPE = −0.036 false detections/image
+  [−0.090, +0.041].
+- **Adding color to the outline graph hurts under shift:** GNN-COLOR − GNN = +0.122
+  [+0.026, +0.191] false detections/image and −0.0015 [−0.0022, −0.0006] recall at F*.
+- **Shape alone still helps:** GNN-SHAPE − BASE = −0.310 [−0.400, −0.220].
+- **Texture helps more:** RGB − BASE = −0.655 [−0.777, −0.494] false detections/image,
+  +0.0065 [+0.0050, +0.0079] recall at F*, +0.53 [+0.29, +0.79] mAP points on T-shift.
+
+On the clean id-val fold used to fit the fusion, the networks barely changed AUROC
+(BASE 0.908, GNN 0.910, RGB 0.918), so the gains under shift are not an artifact of an
+over-fitted fusion.
+
+### 4.7 Unfiltered dashcam footage (blind audit)
+
+⟨Pending: blind precision audit of BASE, GNN and RGB detections on comma2k19 footage (2,270
+frames, 100 detections per arm). Filled from `results/gnn/footage.json`.⟩
+
+### 4.8 Summary
+
+Shape-only re-scoring reduced false detections at matched recall under night and weather shift,
+and the effect is statistically clear (G1, G2) but small. A same-size second stage that sees
+texture did better on every measure (G3 not supported), and adding color to the shape graph made
+it worse. Under this setup we find **no evidence that discarding texture is what helps**. The
+gains come from a second look at each box, and that second look works better with texture.
 
 ## 5. Discussion
 
